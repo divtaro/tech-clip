@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install @prisma/client next-auth@beta zod cheerio @radix-ui/react-dialog @radix-ui/react-select @radix-ui/react-dropdown-menu lucide-react react-hot-toast use-debounce)",
+      "Bash(npm install -D prisma)",
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(cat package.json)",
+      "Bash(npx shadcn@latest add button card input textarea dialog select dropdown-menu badge)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
