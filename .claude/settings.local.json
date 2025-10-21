@@ -5,7 +5,8 @@
       "Bash(npm install -D prisma)",
       "Bash(npx shadcn@latest init -d)",
       "Bash(cat package.json)",
-      "Bash(npx shadcn@latest add button card input textarea dialog select dropdown-menu badge)"
+      "Bash(npx shadcn@latest add button card input textarea dialog select dropdown-menu badge)",
+      "Bash(npx prisma generate)"
     ],
     "deny": [],
     "ask": []
