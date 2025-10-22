@@ -2,8 +2,14 @@
 
 import { auth } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { createArticleSchema, type CreateArticleInput } from "@/lib/validations/article"
+import {
+  createArticleSchema,
+  updateArticleSchema,
+  type CreateArticleInput,
+  type UpdateArticleInput
+} from "@/lib/validations/article"
 import { revalidatePath } from "next/cache"
+import { redirect } from "next/navigation"
 
 export async function createArticle(input: CreateArticleInput) {
   try {
@@ -103,4 +109,69 @@ export async function deleteArticle(id: string) {
     console.error("記事削除エラー:", error)
     return { success: false, error: "記事の削除に失敗しました" }
   }
+}
+
+export async function getArticleById(id: string) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: "認証が必要です", data: null }
+    }
+
+    const article = await prisma.article.findUnique({
+      where: { id },
+    })
+
+    if (!article || article.userId !== session.user.id) {
+      return { success: false, error: "記事が見つかりません", data: null }
+    }
+
+    return { success: true, data: article }
+  } catch (error) {
+    console.error("記事取得エラー:", error)
+    return { success: false, error: "記事の取得に失敗しました", data: null }
+  }
+}
+
+export async function updateArticle(articleId: string, input: UpdateArticleInput) {
+  try {
+    const session = await auth()
+    if (!session?.user?.id) {
+      return { success: false, error: "認証が必要です" }
+    }
+
+    // 記事の所有者確認
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+    })
+
+    if (!article || article.userId !== session.user.id) {
+      return { success: false, error: "記事が見つかりません" }
+    }
+
+    // バリデーション
+    const validated = updateArticleSchema.parse(input)
+
+    // 更新
+    await prisma.article.update({
+      where: { id: articleId },
+      data: validated,
+    })
+
+    revalidatePath("/dashboard")
+    revalidatePath(`/dashboard/articles/${articleId}`)
+
+    return { success: true }
+  } catch (error) {
+    console.error("記事更新エラー:", error)
+    return { success: false, error: "更新に失敗しました" }
+  }
+}
+
+export async function deleteArticleAndRedirect(id: string) {
+  const result = await deleteArticle(id)
+  if (result.success) {
+    redirect("/dashboard")
+  }
+  return result
 }

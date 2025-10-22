@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -21,10 +21,11 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Loader2, AlertCircle } from "lucide-react"
 import { createArticle } from "@/actions/article-actions"
 import toast from "react-hot-toast"
 import { z } from "zod"
+import { useDebouncedCallback } from "use-debounce"
 
 interface ArticleCreateModalProps {
   open: boolean
@@ -42,6 +43,68 @@ interface OGPData {
 
 const urlSchema = z.string().url("有効なURLを入力してください")
 
+// URL正規化関数
+const normalizeUrl = (input: string): string => {
+  // 前後の空白を削除
+  let normalized = input.trim()
+
+  // 全角文字を半角に変換
+  normalized = normalized.replace(/[Ａ-Ｚａ-ｚ０-９]/g, (s) => {
+    return String.fromCharCode(s.charCodeAt(0) - 0xFEE0)
+  })
+
+  // 全角スラッシュを半角に
+  normalized = normalized.replace(/／/g, '/')
+
+  // 全角コロンを半角に
+  normalized = normalized.replace(/：/g, ':')
+
+  // 全角ドットを半角に
+  normalized = normalized.replace(/．/g, '.')
+
+  return normalized
+}
+
+// 厳密なURL検証関数
+const isValidUrl = (urlString: string): boolean => {
+  // 空文字チェック
+  if (!urlString || !urlString.trim()) {
+    return false
+  }
+
+  // 正規化
+  const normalized = normalizeUrl(urlString)
+
+  // URL形式チェック
+  try {
+    const url = new URL(normalized)
+
+    // http/httpsのみ許可
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      return false
+    }
+
+    // ホスト名の検証（日本語ドメインなどを除外）
+    if (!/^[a-zA-Z0-9.-]+$/.test(url.hostname)) {
+      return false
+    }
+
+    // パスに全角文字が含まれていないかチェック
+    if (/[^\x00-\x7F]/.test(url.pathname)) {
+      return false
+    }
+
+    // クエリパラメータに全角文字が含まれていないかチェック
+    if (url.search && /[^\x00-\x7F]/.test(url.search)) {
+      return false
+    }
+
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalProps) {
   const [url, setUrl] = useState("")
   const [urlError, setUrlError] = useState("")
@@ -51,63 +114,92 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
   const [isFetching, setIsFetching] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleUrlBlur = () => {
-    try {
-      urlSchema.parse(url)
-      setUrlError("")
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setUrlError(error.errors[0].message)
-      }
-    }
-  }
+  // デバウンス付き自動OGP取得
+  const debouncedFetchOgp = useDebouncedCallback(
+    async (inputUrl: string) => {
+      // URL正規化
+      const normalizedUrl = normalizeUrl(inputUrl)
 
-  const handleFetchOGP = async () => {
-    try {
-      urlSchema.parse(url)
-      setUrlError("")
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        setUrlError(error.errors[0].message)
-        return
-      }
-    }
-
-    setIsFetching(true)
-    try {
-      const response = await fetch("/api/ogp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        toast.error(data.error || "OGP情報の取得に失敗しました")
+      // 空文字チェック
+      if (!normalizedUrl) {
+        setOgpData(null)
+        setUrlError("")
         return
       }
 
-      setOgpData(data)
-      toast.success("OGP情報を取得しました")
-    } catch (error) {
-      console.error("OGP取得エラー:", error)
-      toast.error("OGP情報の取得に失敗しました")
-    } finally {
-      setIsFetching(false)
-    }
-  }
+      // 厳密なURL検証
+      if (!isValidUrl(normalizedUrl)) {
+        setOgpData(null)
+        setUrlError("正しいURLを入力してください")
+        return
+      }
+
+      // URL検証OK
+      setUrlError("")
+
+      // OGP取得
+      setIsFetching(true)
+
+      try {
+        const response = await fetch("/api/ogp", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url: normalizedUrl }),
+        })
+
+        if (!response.ok) {
+          setOgpData(null)
+          setUrlError("記事情報を取得できませんでした")
+          setIsFetching(false)
+          return
+        }
+
+        const data = await response.json()
+
+        // OGPデータの検証
+        if (!data || !data.title) {
+          setOgpData(null)
+          setUrlError("記事情報を取得できませんでした")
+          setIsFetching(false)
+          return
+        }
+
+        setOgpData(data)
+        setUrlError("")
+      } catch (error) {
+        console.error("OGP取得エラー:", error)
+        setOgpData(null)
+        setUrlError("記事情報を取得できませんでした")
+      } finally {
+        setIsFetching(false)
+      }
+    },
+    500
+  )
+
+  // URL変更時に自動実行
+  useEffect(() => {
+    debouncedFetchOgp(url)
+  }, [url, debouncedFetchOgp])
 
   const handleSubmit = async () => {
+    // 最終チェック
+    const normalizedUrl = normalizeUrl(url)
+
+    if (!isValidUrl(normalizedUrl)) {
+      toast.error("正しいURLを入力してください")
+      return
+    }
+
     if (!ogpData) {
-      toast.error("先にOGP情報を取得してください")
+      toast.error("記事情報を取得してください")
       return
     }
 
     setIsSubmitting(true)
     try {
       const result = await createArticle({
-        url,
+        url: normalizedUrl,
         title: ogpData.title,
         description: ogpData.description,
         ogImage: ogpData.ogImage,
@@ -145,7 +237,7 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
         <DialogHeader>
           <DialogTitle>記事を登録</DialogTitle>
           <DialogDescription>
-            記事のURLを入力して、OGP情報を取得してください
+            記事のURLを入力すると自動的に情報を取得します
           </DialogDescription>
         </DialogHeader>
 
@@ -153,95 +245,101 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
           {/* URL入力 */}
           <div className="space-y-2">
             <Label htmlFor="url">URL</Label>
-            <div className="flex gap-2">
-              <div className="flex-1">
-                <Input
-                  id="url"
-                  type="url"
-                  placeholder="https://example.com/article"
-                  value={url}
-                  onChange={(e) => setUrl(e.target.value)}
-                  onBlur={handleUrlBlur}
-                  disabled={isFetching}
-                />
-                {urlError && (
-                  <p className="text-sm text-destructive mt-1">{urlError}</p>
-                )}
-              </div>
-              <Button
-                onClick={handleFetchOGP}
-                disabled={isFetching || !url}
-              >
-                {isFetching ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    取得中
-                  </>
-                ) : (
-                  "取得"
-                )}
-              </Button>
+            <div className="relative">
+              <Input
+                id="url"
+                type="url"
+                placeholder="https://example.com/article"
+                value={url}
+                onChange={(e) => setUrl(e.target.value)}
+                className="pr-10"
+              />
+              {isFetching && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                </div>
+              )}
             </div>
+            {urlError && (
+              <p className="text-sm text-destructive flex items-center gap-1">
+                <AlertCircle className="h-4 w-4" />
+                {urlError}
+              </p>
+            )}
           </div>
 
-          {/* OGPプレビュー */}
-          {ogpData && (
-            <Card>
-              <CardContent className="pt-6">
-                <div className="space-y-3">
-                  {ogpData.ogImage && (
-                    <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
-                      <img
-                        src={ogpData.ogImage}
-                        alt={ogpData.title || "記事画像"}
-                        className="object-cover w-full h-full"
-                      />
-                    </div>
-                  )}
-                  {ogpData.siteName && (
-                    <p className="text-xs text-muted-foreground">
-                      {ogpData.siteName}
-                    </p>
-                  )}
-                  {ogpData.title && (
-                    <h3 className="font-semibold">{ogpData.title}</h3>
-                  )}
-                  {ogpData.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                      {ogpData.description}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+          {/* OGP取得失敗メッセージ */}
+          {url && !isFetching && !ogpData && urlError && (
+            <div className="text-center py-8">
+              <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-2" />
+              <p className="text-destructive font-medium">{urlError}</p>
+              <p className="text-sm text-muted-foreground mt-2">
+                URLを確認してください
+              </p>
+            </div>
           )}
 
-          {/* ステータス選択 */}
-          <div className="space-y-2">
-            <Label htmlFor="status">ステータス</Label>
-            <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
-              <SelectTrigger id="status">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="TO_READ">読みたい</SelectItem>
-                <SelectItem value="READING">読んでいる</SelectItem>
-                <SelectItem value="COMPLETED">読んだ</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+          {/* OGP取得成功後に表示 */}
+          {ogpData && (
+            <>
+              {/* OGPプレビュー */}
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-3">
+                    {ogpData.ogImage && (
+                      <div className="aspect-video w-full overflow-hidden rounded-md bg-muted">
+                        <img
+                          src={ogpData.ogImage}
+                          alt={ogpData.title || "記事画像"}
+                          className="object-cover w-full h-full"
+                        />
+                      </div>
+                    )}
+                    {ogpData.siteName && (
+                      <p className="text-xs text-muted-foreground">
+                        {ogpData.siteName}
+                      </p>
+                    )}
+                    {ogpData.title && (
+                      <h3 className="font-semibold">{ogpData.title}</h3>
+                    )}
+                    {ogpData.description && (
+                      <p className="text-sm text-muted-foreground line-clamp-3">
+                        {ogpData.description}
+                      </p>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* メモ */}
-          <div className="space-y-2">
-            <Label htmlFor="memo">メモ（任意）</Label>
-            <Textarea
-              id="memo"
-              placeholder="この記事についてのメモを入力..."
-              value={memo}
-              onChange={(e) => setMemo(e.target.value)}
-              rows={4}
-            />
-          </div>
+              {/* ステータス選択 */}
+              <div className="space-y-2">
+                <Label htmlFor="status">ステータス</Label>
+                <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
+                  <SelectTrigger id="status">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="TO_READ">読みたい</SelectItem>
+                    <SelectItem value="READING">読んでいる</SelectItem>
+                    <SelectItem value="COMPLETED">読んだ</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* メモ入力 */}
+              <div className="space-y-2">
+                <Label htmlFor="memo">メモ（任意）</Label>
+                <Textarea
+                  id="memo"
+                  placeholder="この記事についてのメモを入力..."
+                  value={memo}
+                  onChange={(e) => setMemo(e.target.value)}
+                  rows={4}
+                />
+              </div>
+            </>
+          )}
         </div>
 
         <DialogFooter>
@@ -250,13 +348,20 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
           </Button>
           <Button
             onClick={handleSubmit}
-            disabled={!ogpData || isSubmitting}
+            disabled={!ogpData || isSubmitting || isFetching}
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 登録中
               </>
+            ) : isFetching ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                記事情報を取得中...
+              </>
+            ) : !ogpData ? (
+              "URLを入力してください"
             ) : (
               "登録"
             )}

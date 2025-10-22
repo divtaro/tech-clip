@@ -10,4 +10,10 @@ export const createArticleSchema = z.object({
   memo: z.string().nullable(),
 })
 
+export const updateArticleSchema = z.object({
+  status: z.enum(["TO_READ", "READING", "COMPLETED"]),
+  memo: z.string().nullable(),
+})
+
 export type CreateArticleInput = z.infer<typeof createArticleSchema>
+export type UpdateArticleInput = z.infer<typeof updateArticleSchema>
