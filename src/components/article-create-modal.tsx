@@ -244,7 +244,7 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 px-6 overflow-y-auto flex-1">
+        <div className="space-y-4 px-6 pb-6 overflow-y-auto flex-1">
           {/* URL入力 */}
           <div className="space-y-2">
             <div className="relative">
