@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useTransition } from "react"
+import { useState, useTransition, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -37,6 +37,11 @@ export function ArticleEditForm({
   const [status, setStatus] = useState<Status>(initialStatus)
   const [memo, setMemo] = useState(initialMemo || "")
   const [isPending, startTransition] = useTransition()
+  const [isMounted, setIsMounted] = useState(false)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   const hasChanges =
     status !== initialStatus || memo !== (initialMemo || "")
@@ -64,20 +69,26 @@ export function ArticleEditForm({
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6" suppressHydrationWarning>
       {/* ステータス選択 */}
       <div className="space-y-2">
         <Label htmlFor="status">ステータス</Label>
-        <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
-          <SelectTrigger id="status">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="TO_READ">{statusLabels.TO_READ}</SelectItem>
-            <SelectItem value="READING">{statusLabels.READING}</SelectItem>
-            <SelectItem value="COMPLETED">{statusLabels.COMPLETED}</SelectItem>
-          </SelectContent>
-        </Select>
+        {isMounted ? (
+          <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
+            <SelectTrigger id="status">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="TO_READ">{statusLabels.TO_READ}</SelectItem>
+              <SelectItem value="READING">{statusLabels.READING}</SelectItem>
+              <SelectItem value="COMPLETED">{statusLabels.COMPLETED}</SelectItem>
+            </SelectContent>
+          </Select>
+        ) : (
+          <div className="flex h-9 w-full items-center justify-between whitespace-nowrap rounded-md border border-input bg-transparent px-3 py-2 text-sm">
+            {statusLabels[initialStatus]}
+          </div>
+        )}
       </div>
 
       {/* メモ入力 */}
@@ -90,6 +101,7 @@ export function ArticleEditForm({
           onChange={(e) => setMemo(e.target.value)}
           rows={8}
           className="resize-none"
+          suppressHydrationWarning
         />
       </div>
 
