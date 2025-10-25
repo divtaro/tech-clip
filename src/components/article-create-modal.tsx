@@ -234,7 +234,7 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-2xl h-[85vh] flex flex-col p-0"
+        className="max-w-2xl max-h-[85vh] flex flex-col p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
         <DialogHeader className="space-y-3 px-6 pt-6 pb-4 shrink-0">
