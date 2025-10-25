@@ -44,6 +44,7 @@ export function DashboardSearchBar() {
         className="pl-10 pr-10 focus:border-primary focus:ring-1 focus:ring-primary"
         value={query}
         onChange={handleChange}
+        suppressHydrationWarning
       />
       {query && (
         <Button
