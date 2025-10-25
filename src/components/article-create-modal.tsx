@@ -233,15 +233,18 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-3">
+      <DialogContent
+        className="max-w-2xl h-[85vh] flex flex-col p-0"
+        onOpenAutoFocus={(e) => e.preventDefault()}
+      >
+        <DialogHeader className="space-y-3 px-6 pt-6 pb-4 shrink-0">
           <DialogTitle>記事を登録</DialogTitle>
           <DialogDescription>
             記事のURLを入力すると自動で情報を取得します
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-4 px-6 overflow-y-auto flex-1">
           {/* URL入力 */}
           <div className="space-y-2">
             <div className="relative">
@@ -303,15 +306,15 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
               </Card>
 
               {/* ステータス選択 */}
-              <div className="space-y-2">
+              <div className="space-y-2" suppressHydrationWarning>
                 <Label htmlFor="status">ステータス</Label>
                 <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
-                  <SelectTrigger id="status">
+                  <SelectTrigger id="status" suppressHydrationWarning>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="TO_READ">読みたい</SelectItem>
-                    <SelectItem value="READING">読んでいる</SelectItem>
+                    <SelectItem value="READING">読んでる</SelectItem>
                     <SelectItem value="COMPLETED">読んだ</SelectItem>
                   </SelectContent>
                 </Select>
@@ -332,12 +335,12 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
           )}
         </div>
 
-        <DialogFooter>
+        <DialogFooter className="px-6 py-4 border-t bg-background shrink-0">
           <Button
             onClick={handleSubmit}
             disabled={!ogpData || isSubmitting || isFetching}
             variant={ogpData ? "default" : "secondary"}
-            className="w-full"
+            className="w-full h-12"
           >
             {isSubmitting ? (
               <>

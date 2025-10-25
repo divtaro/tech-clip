@@ -79,61 +79,61 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
   }
 
   return (
-    <div className="space-y-6">
+    <div>
       {/* ステータスフィルター - モダンなタブスタイル with アニメーション + Sticky */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4 -mx-4 px-4 pt-2">
+      <div className="sticky top-0 z-50 border-b shadow-sm pb-3 -mx-4 px-4 pt-4 mb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
         <div className="flex justify-center gap-6">
         <button
           onClick={() => setSelectedStatus("TO_READ")}
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "TO_READ"
               ? "text-primary font-bold"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "TO_READ" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
           }}
         >
-          読みたい ({toReadCount})
+          読みたい
         </button>
         <button
           onClick={() => setSelectedStatus("READING")}
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "READING"
               ? "text-primary font-bold"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "READING" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
           }}
         >
-          読んでいる ({readingCount})
+          読んでる
         </button>
         <button
           onClick={() => setSelectedStatus("COMPLETED")}
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "COMPLETED"
               ? "text-primary font-bold"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "COMPLETED" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
           }}
         >
-          読んだ ({completedCount})
+          読んだ
         </button>
         <button
           onClick={() => setSelectedStatus("ALL")}
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "ALL"
               ? "text-primary font-bold"
-              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "ALL" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
           }}
         >
-          すべて ({allCount})
+          すべて
         </button>
         </div>
       </div>
@@ -162,10 +162,11 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
         </div>
       )}
 
-      {/* FAB（記事追加ボタン） - 真円 + 枠線 + 不透明な背景色 */}
+      {/* FAB（記事追加ボタン） */}
       <Button
         size="lg"
-        className="fixed bottom-8 right-8 rounded-full h-14 w-14 p-0 shadow-2xl hover:shadow-2xl transition-all z-50 border-4 border-white dark:border-slate-900 bg-primary hover:bg-primary/90 aspect-square opacity-100"
+        className="fixed bottom-8 right-8 rounded-full h-14 w-14 p-0 shadow-2xl hover:shadow-2xl transition-all z-50 text-white border-0"
+        style={{ backgroundColor: 'hsl(var(--primary))' }}
         onClick={() => setIsCreateModalOpen(true)}
         aria-label="記事を登録"
       >

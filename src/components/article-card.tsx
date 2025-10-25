@@ -1,7 +1,6 @@
 "use client"
 
 import { useState } from "react"
-import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { StatusBadge } from "@/components/status-badge"
 import {
@@ -52,22 +51,29 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
     // ドロップダウンメニューのクリックを無視
     if ((e.target as HTMLElement).closest('[data-dropdown-trigger]')) {
       e.preventDefault()
+      return
     }
+    // カードをクリックしたら記事URLに遷移
+    e.preventDefault()
+    window.open(article.url, "_blank", "noopener,noreferrer")
   }
 
   return (
     <>
-      <Link href={`/dashboard/articles/${article.id}`} onClick={handleCardClick}>
+      <div onClick={handleCardClick} className="cursor-pointer">
         <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative group h-full flex flex-col">
-          {/* 3点リーダー */}
-          <div className="absolute top-2 right-2 z-10" data-dropdown-trigger>
+          {/* 3点リーダー - カード下部に常時表示 */}
+          <div className="absolute bottom-2 right-2 z-10" data-dropdown-trigger>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm hover:bg-background"
-                  onClick={(e) => e.preventDefault()}
+                  className="h-8 w-8 p-0 bg-background/90 backdrop-blur-sm hover:bg-background shadow-sm"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    e.stopPropagation()
+                  }}
                   aria-label="メニューを開く"
                 >
                   <MoreVertical className="h-4 w-4" />
@@ -77,26 +83,19 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
                 <DropdownMenuItem
                   onClick={(e) => {
                     e.preventDefault()
+                    e.stopPropagation()
                     window.location.href = `/dashboard/articles/${article.id}`
                   }}
                 >
                   <Pencil className="mr-2 h-4 w-4" />
                   <span>編集</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={(e) => {
-                    e.preventDefault()
-                    window.open(article.url, "_blank", "noopener,noreferrer")
-                  }}
-                >
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  <span>記事を開く</span>
-                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
                   onClick={(e) => {
                     e.preventDefault()
+                    e.stopPropagation()
                     setShowDeleteDialog(true)
                   }}
                 >
@@ -131,18 +130,12 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
             )}
 
             {/* タイトル */}
-            <h3 className="font-semibold line-clamp-2 h-12">
+            <h3 className="font-semibold line-clamp-2">
               {article.title || "タイトルなし"}
             </h3>
 
-            {/* 説明文 - 固定高さで3行表示 */}
-            <p className="text-sm text-muted-foreground line-clamp-3 h-[4.5rem]">
-              {article.description || ""}
-            </p>
-
             {/* フッター - 下部に固定 */}
-            <div className="flex items-center justify-between pt-2 mt-auto">
-              <StatusBadge status={article.status} />
+            <div className="flex items-center gap-2 pt-2 mt-auto">
               <time className="text-xs text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 {new Date(article.createdAt).toLocaleDateString("ja-JP", {
@@ -151,10 +144,13 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
                   day: "2-digit",
                 })}
               </time>
+              <StatusBadge status={article.status} />
+              {/* 3点リーダー用のスペース確保 */}
+              <div className="w-8" />
             </div>
           </CardContent>
         </Card>
-      </Link>
+      </div>
 
       {/* 削除確認ダイアログ */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

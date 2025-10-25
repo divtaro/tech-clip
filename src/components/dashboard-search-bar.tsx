@@ -40,7 +40,7 @@ export function DashboardSearchBar() {
       <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
       <Input
         type="text"
-        placeholder="記事を検索..."
+        placeholder="検索"
         className="pl-10 pr-10 focus:border-primary focus:ring-1 focus:ring-primary"
         value={query}
         onChange={handleChange}
