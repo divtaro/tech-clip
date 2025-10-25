@@ -74,10 +74,14 @@
   border-color: hsl(var(--border));
 }
 
+html {
+  overflow-y: scroll;
+}
+
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
-  overflow-y: scroll;
+  width: 100vw;
 }
 
 /* モーダルとセレクトボックスの透過を防ぐ */

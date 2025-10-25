@@ -351,23 +351,25 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
           )}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t bg-background shrink-0 !flex !flex-row !justify-center">
-          <Button
-            onClick={handleSubmit}
-            disabled={!ogpData || isSubmitting || isFetching}
-            className="w-48 h-12 text-white border-0"
-            style={{ backgroundColor: 'hsl(var(--primary))' }}
-          >
-            {isSubmitting ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                登録中
-              </>
-            ) : (
-              "登録"
-            )}
-          </Button>
-        </DialogFooter>
+        {ogpData && (
+          <DialogFooter className="px-6 py-4 border-t bg-background shrink-0 !flex !flex-row !justify-center">
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting || isFetching}
+              className="w-48 h-12 text-white border-0"
+              style={{ backgroundColor: 'hsl(var(--primary))' }}
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  登録中
+                </>
+              ) : (
+                "登録"
+              )}
+            </Button>
+          </DialogFooter>
+        )}
       </DialogContent>
     </Dialog>
   )
