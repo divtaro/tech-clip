@@ -20,7 +20,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { MoreVertical, Pencil, ExternalLink, Trash2 } from "lucide-react"
+import { MoreVertical, Pencil, ExternalLink, Trash2, Calendar } from "lucide-react"
 
 type Status = "TO_READ" | "READING" | "COMPLETED"
 
@@ -58,7 +58,7 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
   return (
     <>
       <Link href={`/dashboard/articles/${article.id}`} onClick={handleCardClick}>
-        <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative group">
+        <Card className="overflow-hidden transition-all duration-300 hover:-translate-y-1 hover:shadow-lg relative group h-full flex flex-col">
           {/* 3点リーダー */}
           <div className="absolute top-2 right-2 z-10" data-dropdown-trigger>
             <DropdownMenu>
@@ -68,6 +68,7 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
                   size="sm"
                   className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity bg-background/80 backdrop-blur-sm hover:bg-background"
                   onClick={(e) => e.preventDefault()}
+                  aria-label="メニューを開く"
                 >
                   <MoreVertical className="h-4 w-4" />
                 </Button>
@@ -121,7 +122,7 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
             )}
           </div>
 
-          <CardContent className="p-4 space-y-2">
+          <CardContent className="p-4 space-y-2 flex-1 flex flex-col">
             {/* サイト名 */}
             {article.siteName && (
               <p className="text-xs text-muted-foreground truncate">
@@ -130,21 +131,20 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
             )}
 
             {/* タイトル */}
-            <h3 className="font-semibold line-clamp-2 min-h-[3rem]">
+            <h3 className="font-semibold line-clamp-2 h-12">
               {article.title || "タイトルなし"}
             </h3>
 
-            {/* 説明文 */}
-            {article.description && (
-              <p className="text-sm text-muted-foreground line-clamp-3 min-h-[4.5rem]">
-                {article.description}
-              </p>
-            )}
+            {/* 説明文 - 固定高さで3行表示 */}
+            <p className="text-sm text-muted-foreground line-clamp-3 h-[4.5rem]">
+              {article.description || ""}
+            </p>
 
-            {/* フッター */}
-            <div className="flex items-center justify-between pt-2">
+            {/* フッター - 下部に固定 */}
+            <div className="flex items-center justify-between pt-2 mt-auto">
               <StatusBadge status={article.status} />
-              <time className="text-xs text-muted-foreground">
+              <time className="text-xs text-muted-foreground flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
                 {new Date(article.createdAt).toLocaleDateString("ja-JP", {
                   year: "numeric",
                   month: "2-digit",
@@ -158,21 +158,15 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
 
       {/* 削除確認ダイアログ */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent>
+        <DialogContent className="max-w-sm">
           <DialogHeader>
-            <DialogTitle>記事を削除しますか？</DialogTitle>
-            <DialogDescription>
-              この操作は取り消せません。本当に削除しますか？
-            </DialogDescription>
+            <DialogTitle className="text-center">記事を削除しますか？</DialogTitle>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowDeleteDialog(false)}>
-              キャンセル
-            </Button>
-            <Button variant="destructive" onClick={handleDelete}>
+          <div className="flex flex-col gap-3 pt-4">
+            <Button variant="destructive" onClick={handleDelete} className="w-full">
               削除
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </>

@@ -2,12 +2,13 @@
 
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
-import { SearchBar } from "@/components/search-bar"
 import { ArticleCard } from "@/components/article-card"
 import { ArticleCreateModal } from "@/components/article-create-modal"
+import { EmptyState } from "@/components/empty-state"
 import { Plus } from "lucide-react"
 import { deleteArticle } from "@/actions/article-actions"
 import toast from "react-hot-toast"
+import { motion } from "framer-motion"
 
 type Status = "TO_READ" | "READING" | "COMPLETED"
 
@@ -24,11 +25,11 @@ interface Article {
 
 interface DashboardClientProps {
   initialArticles: Article[]
+  searchQuery: string
 }
 
-export function DashboardClient({ initialArticles }: DashboardClientProps) {
+export function DashboardClient({ initialArticles, searchQuery }: DashboardClientProps) {
   const [selectedStatus, setSelectedStatus] = useState<Status | "ALL">("ALL")
-  const [searchQuery, setSearchQuery] = useState("")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
 
   const filteredArticles = initialArticles.filter((article) => {
@@ -40,6 +41,20 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
     return matchesStatus && matchesSearch
   })
 
+  // フィルタ後の各ステータスの件数を計算
+  const searchedArticles = initialArticles.filter((article) => {
+    const matchesSearch =
+      searchQuery === "" ||
+      article.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      article.description?.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesSearch
+  })
+
+  const allCount = searchedArticles.length
+  const toReadCount = searchedArticles.filter((a) => a.status === "TO_READ").length
+  const readingCount = searchedArticles.filter((a) => a.status === "READING").length
+  const completedCount = searchedArticles.filter((a) => a.status === "COMPLETED").length
+
   const handleDelete = async (id: string) => {
     const result = await deleteArticle(id)
     if (result.success) {
@@ -50,73 +65,111 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
     }
   }
 
+  // 記事が0件の場合は空状態を表示
+  if (initialArticles.length === 0) {
+    return (
+      <div>
+        <EmptyState onAddClick={() => setIsCreateModalOpen(true)} />
+        <ArticleCreateModal
+          open={isCreateModalOpen}
+          onOpenChange={setIsCreateModalOpen}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-6">
-      {/* ステータスフィルター */}
-      <div className="flex flex-wrap gap-2">
-        <Button
-          variant={selectedStatus === "ALL" ? "default" : "outline"}
-          onClick={() => setSelectedStatus("ALL")}
-        >
-          All ({initialArticles.length})
-        </Button>
-        <Button
-          variant={selectedStatus === "TO_READ" ? "default" : "outline"}
+      {/* ステータスフィルター - モダンなタブスタイル with アニメーション + Sticky */}
+      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-4 -mx-4 px-4 pt-2">
+        <div className="flex justify-center gap-6">
+        <button
           onClick={() => setSelectedStatus("TO_READ")}
+          className={`pb-3 px-2 text-sm transition-all relative ${
+            selectedStatus === "TO_READ"
+              ? "text-primary font-bold"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+          }`}
+          style={{
+            borderBottom: selectedStatus === "TO_READ" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
+          }}
         >
-          読みたい ({initialArticles.filter((a) => a.status === "TO_READ").length})
-        </Button>
-        <Button
-          variant={selectedStatus === "READING" ? "default" : "outline"}
+          読みたい ({toReadCount})
+        </button>
+        <button
           onClick={() => setSelectedStatus("READING")}
+          className={`pb-3 px-2 text-sm transition-all relative ${
+            selectedStatus === "READING"
+              ? "text-primary font-bold"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+          }`}
+          style={{
+            borderBottom: selectedStatus === "READING" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
+          }}
         >
-          読んでいる ({initialArticles.filter((a) => a.status === "READING").length})
-        </Button>
-        <Button
-          variant={selectedStatus === "COMPLETED" ? "default" : "outline"}
+          読んでいる ({readingCount})
+        </button>
+        <button
           onClick={() => setSelectedStatus("COMPLETED")}
+          className={`pb-3 px-2 text-sm transition-all relative ${
+            selectedStatus === "COMPLETED"
+              ? "text-primary font-bold"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+          }`}
+          style={{
+            borderBottom: selectedStatus === "COMPLETED" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
+          }}
         >
-          読んだ ({initialArticles.filter((a) => a.status === "COMPLETED").length})
-        </Button>
+          読んだ ({completedCount})
+        </button>
+        <button
+          onClick={() => setSelectedStatus("ALL")}
+          className={`pb-3 px-2 text-sm transition-all relative ${
+            selectedStatus === "ALL"
+              ? "text-primary font-bold"
+              : "text-muted-foreground hover:text-foreground hover:bg-accent/30 font-medium"
+          }`}
+          style={{
+            borderBottom: selectedStatus === "ALL" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
+          }}
+        >
+          すべて ({allCount})
+        </button>
+        </div>
       </div>
-
-      {/* 検索バー */}
-      <SearchBar onSearch={setSearchQuery} />
 
       {/* 記事一覧 */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredArticles.map((article) => (
-          <ArticleCard
-            key={article.id}
-            article={{
-              ...article,
-              title: article.title || "タイトルなし",
-              description: article.description || "",
-              siteName: article.siteName || "",
-            }}
-            onDelete={handleDelete}
-          />
-        ))}
-      </div>
-
-      {/* 結果が0件の場合 */}
-      {filteredArticles.length === 0 && (
+      {filteredArticles.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredArticles.map((article) => (
+            <ArticleCard
+              key={article.id}
+              article={{
+                ...article,
+                title: article.title || "タイトルなし",
+                description: article.description || "",
+                siteName: article.siteName || "",
+              }}
+              onDelete={handleDelete}
+            />
+          ))}
+        </div>
+      ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground">
-            {initialArticles.length === 0
-              ? "記事がありません。右下のボタンから記事を登録しましょう！"
-              : "記事が見つかりませんでした"}
+          <p className="text-muted-foreground text-lg">
+            記事が見つかりませんでした
           </p>
         </div>
       )}
 
-      {/* FAB（記事追加ボタン） */}
+      {/* FAB（記事追加ボタン） - 真円 + 枠線 + 不透明な背景色 */}
       <Button
         size="lg"
-        className="fixed bottom-8 right-8 rounded-full h-14 w-14 shadow-lg hover:shadow-xl transition-shadow"
+        className="fixed bottom-8 right-8 rounded-full h-14 w-14 p-0 shadow-2xl hover:shadow-2xl transition-all z-50 border-4 border-white dark:border-slate-900 bg-primary hover:bg-primary/90 aspect-square opacity-100"
         onClick={() => setIsCreateModalOpen(true)}
+        aria-label="記事を登録"
       >
-        <Plus className="h-6 w-6" />
+        <Plus className="h-8 w-8" />
       </Button>
 
       {/* 記事登録モーダル */}

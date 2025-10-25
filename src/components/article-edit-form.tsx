@@ -94,20 +94,22 @@ export function ArticleEditForm({
       </div>
 
       {/* 保存ボタン */}
-      <Button
-        type="submit"
-        disabled={!hasChanges || isPending}
-        className="w-full sm:w-auto"
-      >
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            保存中
-          </>
-        ) : (
-          "保存"
-        )}
-      </Button>
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={!hasChanges || isPending}
+          className="w-full sm:w-auto"
+        >
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              保存中
+            </>
+          ) : (
+            "保存"
+          )}
+        </Button>
+      </div>
     </form>
   )
 }

@@ -234,17 +234,16 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="space-y-3">
           <DialogTitle>記事を登録</DialogTitle>
           <DialogDescription>
-            記事のURLを入力すると自動的に情報を取得します
+            記事のURLを入力すると自動で情報を取得します
           </DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">
           {/* URL入力 */}
           <div className="space-y-2">
-            <Label htmlFor="url">URL</Label>
             <div className="relative">
               <Input
                 id="url"
@@ -260,22 +259,13 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
                 </div>
               )}
             </div>
-            {urlError && (
-              <p className="text-sm text-destructive flex items-center gap-1">
-                <AlertCircle className="h-4 w-4" />
-                {urlError}
-              </p>
-            )}
           </div>
 
-          {/* OGP取得失敗メッセージ */}
+          {/* OGP取得失敗メッセージ（統合版） */}
           {url && !isFetching && !ogpData && urlError && (
             <div className="text-center py-8">
               <AlertCircle className="h-12 w-12 mx-auto text-destructive mb-2" />
               <p className="text-destructive font-medium">{urlError}</p>
-              <p className="text-sm text-muted-foreground mt-2">
-                URLを確認してください
-              </p>
             </div>
           )}
 
@@ -343,25 +333,17 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={handleClose}>
-            キャンセル
-          </Button>
           <Button
             onClick={handleSubmit}
             disabled={!ogpData || isSubmitting || isFetching}
+            variant={ogpData ? "default" : "secondary"}
+            className="w-full"
           >
             {isSubmitting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 登録中
               </>
-            ) : isFetching ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                記事情報を取得中...
-              </>
-            ) : !ogpData ? (
-              "URLを入力してください"
             ) : (
               "登録"
             )}

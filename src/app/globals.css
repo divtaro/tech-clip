@@ -7,19 +7,19 @@
   --color-card-foreground: 0 0% 3.9%;
   --color-popover: 0 0% 100%;
   --color-popover-foreground: 0 0% 3.9%;
-  --color-primary: 0 0% 9%;
+  --color-primary: 221 83% 53%;
   --color-primary-foreground: 0 0% 98%;
   --color-secondary: 0 0% 96.1%;
   --color-secondary-foreground: 0 0% 9%;
   --color-muted: 0 0% 96.1%;
   --color-muted-foreground: 0 0% 45.1%;
-  --color-accent: 0 0% 96.1%;
+  --color-accent: 0 0% 88%;
   --color-accent-foreground: 0 0% 9%;
   --color-destructive: 0 84.2% 60.2%;
   --color-destructive-foreground: 0 0% 98%;
-  --color-border: 0 0% 89.8%;
-  --color-input: 0 0% 89.8%;
-  --color-ring: 0 0% 3.9%;
+  --color-border: 0 0% 85%;
+  --color-input: 0 0% 85%;
+  --color-ring: 221 83% 53%;
   --radius-lg: 0.5rem;
   --radius-md: calc(0.5rem - 2px);
   --radius-sm: calc(0.5rem - 4px);
@@ -55,19 +55,19 @@
   --color-card-foreground: 0 0% 98%;
   --color-popover: 0 0% 3.9%;
   --color-popover-foreground: 0 0% 98%;
-  --color-primary: 0 0% 98%;
-  --color-primary-foreground: 0 0% 9%;
+  --color-primary: 221 83% 63%;
+  --color-primary-foreground: 0 0% 98%;
   --color-secondary: 0 0% 14.9%;
   --color-secondary-foreground: 0 0% 98%;
   --color-muted: 0 0% 14.9%;
   --color-muted-foreground: 0 0% 63.9%;
-  --color-accent: 0 0% 14.9%;
+  --color-accent: 0 0% 20%;
   --color-accent-foreground: 0 0% 98%;
   --color-destructive: 0 62.8% 30.6%;
   --color-destructive-foreground: 0 0% 98%;
   --color-border: 0 0% 14.9%;
   --color-input: 0 0% 14.9%;
-  --color-ring: 0 0% 83.1%;
+  --color-ring: 221 83% 63%;
 }
 
 * {
@@ -77,4 +77,59 @@
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  overflow-y: scroll;
+}
+
+/* モーダルとセレクトボックスの透過を防ぐ */
+[role="dialog"],
+[role="alertdialog"] {
+  background-color: hsl(var(--popover)) !important;
+  opacity: 1 !important;
+}
+
+/* ドロップダウンとセレクトボックスのコンテナ背景 */
+[role="menu"],
+[role="listbox"] {
+  background-color: hsl(var(--popover));
+}
+
+.popover-content {
+  background-color: hsl(var(--popover)) !important;
+  opacity: 1 !important;
+}
+
+/* Placeholderの色を統一 */
+::placeholder {
+  color: hsl(var(--muted-foreground));
+  opacity: 0.6;
+}
+
+/* フォーカス時の枠線をアクティブに */
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2);
+}
+
+/* Radix UI Select トリガーのオープン時スタイル */
+button[data-state="open"] {
+  border-color: hsl(var(--primary)) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2) !important;
+}
+
+/* ボタンにカーソルポインター */
+button,
+[role="button"],
+[type="button"],
+[type="submit"] {
+  cursor: pointer;
+}
+
+/* ドロップダウンメニューとセレクトボックスの項目ホバースタイル */
+[role="menuitem"]:hover,
+[role="option"]:hover {
+  background-color: hsl(var(--accent)) !important;
+  color: hsl(var(--accent-foreground)) !important;
 }

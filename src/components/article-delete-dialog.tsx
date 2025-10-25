@@ -3,11 +3,7 @@
 import { useState } from "react"
 import {
   AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
   AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
@@ -53,29 +49,23 @@ export function ArticleDeleteDialog({ articleId }: ArticleDeleteDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={setOpen}>
       <AlertDialogTrigger asChild>
-        <Button variant="destructive" size="sm">
-          <Trash2 className="h-4 w-4 mr-2" />
-          削除
+        <Button variant="destructive" size="icon" aria-label="記事を削除" className="border-0">
+          <Trash2 className="h-6 w-6" />
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent>
+      <AlertDialogContent className="max-w-sm">
         <AlertDialogHeader>
-          <AlertDialogTitle>記事を削除しますか？</AlertDialogTitle>
-          <AlertDialogDescription>
-            この操作は取り消せません。本当に削除しますか？
-          </AlertDialogDescription>
+          <AlertDialogTitle className="text-center">記事を削除しますか？</AlertDialogTitle>
         </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel disabled={isDeleting}>
-            キャンセル
-          </AlertDialogCancel>
-          <AlertDialogAction
+        <div className="flex flex-col gap-3 pt-4">
+          <Button
+            variant="destructive"
             onClick={(e) => {
               e.preventDefault()
               handleDelete()
             }}
             disabled={isDeleting}
-            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            className="w-full"
           >
             {isDeleting ? (
               <>
@@ -85,8 +75,8 @@ export function ArticleDeleteDialog({ articleId }: ArticleDeleteDialogProps) {
             ) : (
               "削除"
             )}
-          </AlertDialogAction>
-        </AlertDialogFooter>
+          </Button>
+        </div>
       </AlertDialogContent>
     </AlertDialog>
   )

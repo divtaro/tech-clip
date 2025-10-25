@@ -28,12 +28,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     <div className="min-h-screen bg-background">
       {/* ナビゲーション */}
       <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-        <div className="container max-w-4xl px-4 py-4">
+        <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <Link href="/dashboard">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                戻る
+              <Button variant="ghost" size="icon" aria-label="ダッシュボードに戻る" className="text-foreground hover:text-foreground">
+                <ArrowLeft className="h-6 w-6" />
               </Button>
             </Link>
             <ArticleDeleteDialog articleId={article.id} />
@@ -42,7 +41,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       </div>
 
       {/* メインコンテンツ */}
-      <main className="container max-w-4xl px-4 py-8 space-y-8">
+      <main className="container max-w-4xl mx-auto px-4 py-8 space-y-8">
         {/* OGP画像 */}
         {article.ogImage ? (
           <div className="aspect-video w-full overflow-hidden rounded-lg bg-muted">
@@ -67,7 +66,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </h1>
           </div>
 
-          <div className="space-y-2 text-sm text-muted-foreground">
+          <div className="space-y-3 text-sm text-muted-foreground">
             {article.siteName && (
               <p className="flex items-center gap-2">
                 <span className="font-medium">サイト:</span>
