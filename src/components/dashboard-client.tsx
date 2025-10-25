@@ -163,15 +163,14 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
       )}
 
       {/* FAB（記事追加ボタン） */}
-      <Button
-        size="lg"
-        className="fixed bottom-8 right-8 rounded-full h-14 w-14 p-0 shadow-2xl hover:shadow-2xl transition-all z-50 text-white border-0"
-        style={{ backgroundColor: 'hsl(var(--primary))' }}
+      <button
+        className="fixed bottom-8 right-8 rounded-full h-16 w-16 shadow-2xl hover:shadow-2xl transition-all z-50 border-0 flex items-center justify-center text-white text-4xl leading-none pb-1"
+        style={{ backgroundColor: 'hsl(var(--primary))', fontWeight: 300 }}
         onClick={() => setIsCreateModalOpen(true)}
         aria-label="記事を登録"
       >
-        <Plus className="h-8 w-8" />
-      </Button>
+        +
+      </button>
 
       {/* 記事登録モーダル */}
       <ArticleCreateModal

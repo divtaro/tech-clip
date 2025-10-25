@@ -256,6 +256,22 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
                 onChange={(e) => setUrl(e.target.value)}
                 className="pr-10"
               />
+              {url && !isFetching && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setUrl("")
+                    setOgpData(null)
+                    setUrlError("")
+                  }}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                  aria-label="クリア"
+                >
+                  <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              )}
               {isFetching && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
                   <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
@@ -335,12 +351,12 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
           )}
         </div>
 
-        <DialogFooter className="px-6 py-4 border-t bg-background shrink-0">
+        <DialogFooter className="px-6 py-4 border-t bg-background shrink-0 !flex !flex-row !justify-center">
           <Button
             onClick={handleSubmit}
             disabled={!ogpData || isSubmitting || isFetching}
-            variant={ogpData ? "default" : "secondary"}
-            className="w-full h-12"
+            className="w-48 h-12 text-white border-0"
+            style={{ backgroundColor: 'hsl(var(--primary))' }}
           >
             {isSubmitting ? (
               <>
