@@ -154,13 +154,28 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
 
       {/* 削除確認ダイアログ */}
       <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm" hideClose>
           <DialogHeader>
             <DialogTitle className="text-center">記事を削除しますか？</DialogTitle>
           </DialogHeader>
-          <div className="flex flex-col gap-3 pt-4">
-            <Button variant="destructive" onClick={handleDelete} className="w-full">
+          <div className="flex flex-col gap-3 pt-4 items-center">
+            <Button
+              onClick={(e) => {
+                e.preventDefault()
+                e.stopPropagation()
+                handleDelete()
+              }}
+              className="w-40 text-white border-0"
+              style={{ backgroundColor: 'hsl(0 84.2% 60.2%)' }}
+            >
               削除
+            </Button>
+            <Button
+              onClick={() => setShowDeleteDialog(false)}
+              className="w-40 border"
+              style={{ borderColor: 'hsl(0 0% 60%)' }}
+            >
+              キャンセル
             </Button>
           </div>
         </DialogContent>

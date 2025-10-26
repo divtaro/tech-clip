@@ -2,12 +2,12 @@
 
 import { useState } from "react"
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Trash2, Loader2 } from "lucide-react"
 import { deleteArticleAndRedirect } from "@/actions/article-actions"
@@ -47,25 +47,25 @@ export function ArticleDeleteDialog({ articleId }: ArticleDeleteDialogProps) {
   }
 
   return (
-    <AlertDialog open={open} onOpenChange={setOpen}>
-      <AlertDialogTrigger asChild>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
         <Button variant="destructive" size="icon" aria-label="記事を削除" className="border-0">
           <Trash2 className="h-6 w-6" />
         </Button>
-      </AlertDialogTrigger>
-      <AlertDialogContent className="max-w-sm">
-        <AlertDialogHeader>
-          <AlertDialogTitle className="text-center">記事を削除しますか？</AlertDialogTitle>
-        </AlertDialogHeader>
-        <div className="flex flex-col gap-3 pt-4">
+      </DialogTrigger>
+      <DialogContent className="max-w-sm" hideClose>
+        <DialogHeader>
+          <DialogTitle className="text-center">記事を削除しますか？</DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-3 pt-4 items-center">
           <Button
-            variant="destructive"
             onClick={(e) => {
               e.preventDefault()
               handleDelete()
             }}
             disabled={isDeleting}
-            className="w-full"
+            className="w-40 text-white border-0"
+            style={{ backgroundColor: 'hsl(0 84.2% 60.2%)' }}
           >
             {isDeleting ? (
               <>
@@ -76,8 +76,15 @@ export function ArticleDeleteDialog({ articleId }: ArticleDeleteDialogProps) {
               "削除"
             )}
           </Button>
+          <Button
+            onClick={() => setOpen(false)}
+            className="w-40 border"
+            style={{ borderColor: 'hsl(0 0% 60%)' }}
+          >
+            キャンセル
+          </Button>
         </div>
-      </AlertDialogContent>
-    </AlertDialog>
+      </DialogContent>
+    </Dialog>
   )
 }
