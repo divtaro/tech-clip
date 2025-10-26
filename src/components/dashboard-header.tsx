@@ -54,7 +54,7 @@ export function DashboardHeader({ user, logoutButton }: DashboardHeaderProps) {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-32" align="end" forceMount>
+              <DropdownMenuContent className="w-32 z-[70]" align="end" forceMount>
                 {logoutButton}
               </DropdownMenuContent>
             </DropdownMenu>

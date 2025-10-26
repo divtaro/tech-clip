@@ -41,7 +41,7 @@ export function ThemeSwitcher() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[140px]">
+      <DropdownMenuContent align="end" className="min-w-[140px] z-[70]">
         <DropdownMenuItem onClick={() => setTheme("light")} className="relative pr-8">
           <Sun className="mr-2 h-4 w-4" />
           ライト

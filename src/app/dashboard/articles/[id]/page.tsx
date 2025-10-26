@@ -29,8 +29,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* ナビゲーションボタン */}
       <div className="flex items-center justify-between">
         <Link href="/dashboard">
-          <Button variant="ghost" size="icon" aria-label="ダッシュボードに戻る">
-            <ArrowLeft className="h-5 w-5" />
+          <Button variant="ghost" className="h-10 w-10 p-0 flex items-center justify-center" aria-label="ダッシュボードに戻る">
+            <ArrowLeft className="shrink-0" strokeWidth={2} style={{ width: '20px', height: '20px' }} />
           </Button>
         </Link>
         <ArticleDeleteDialog articleId={article.id} />

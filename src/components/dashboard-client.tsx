@@ -81,7 +81,7 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
   return (
     <div>
       {/* ステータスフィルター - モダンなタブスタイル with アニメーション + Sticky */}
-      <div className="sticky top-0 z-50 border-b shadow-sm pb-3 -mx-4 px-4 pt-4 mb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
+      <div className="sticky top-0 z-[60] border-b shadow-sm pb-3 -mx-4 px-4 pt-4 mb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
         <div className="flex justify-center gap-6">
         <button
           onClick={() => setSelectedStatus("TO_READ")}
