@@ -88,7 +88,7 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "TO_READ"
               ? "text-primary font-bold"
-              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "TO_READ" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
@@ -101,7 +101,7 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "READING"
               ? "text-primary font-bold"
-              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "READING" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
@@ -114,7 +114,7 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "COMPLETED"
               ? "text-primary font-bold"
-              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "COMPLETED" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
@@ -127,7 +127,7 @@ export function DashboardClient({ initialArticles, searchQuery }: DashboardClien
           className={`pb-3 px-2 text-sm transition-all relative ${
             selectedStatus === "ALL"
               ? "text-primary font-bold"
-              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 font-medium"
+              : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
           }`}
           style={{
             borderBottom: selectedStatus === "ALL" ? "3px solid hsl(var(--primary))" : "3px solid transparent"
