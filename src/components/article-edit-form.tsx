@@ -110,7 +110,8 @@ export function ArticleEditForm({
         <Button
           type="submit"
           disabled={!hasChanges || isPending}
-          className="w-full sm:w-auto"
+          className="w-full sm:w-auto text-white border-0"
+          style={{ backgroundColor: 'hsl(var(--primary))' }}
         >
           {isPending ? (
             <>

@@ -4,7 +4,7 @@ import { ArticleEditForm } from "@/components/article-edit-form"
 import { ArticleDeleteDialog } from "@/components/article-delete-dialog"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
-import { ArrowLeft, ExternalLink } from "lucide-react"
+import { ArrowLeft, ExternalLink, Calendar } from "lucide-react"
 import Link from "next/link"
 import { StatusBadge } from "@/components/status-badge"
 
@@ -51,57 +51,33 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </div>
       )}
 
-      {/* タイトルセクション */}
-      <div className="space-y-4">
-        <div className="flex items-start gap-3">
+      {/* タイトルセクション（タイトル・ステータスは左寄せ、ボタンのみ中央） */}
+      <div className="space-y-3">
+        <h1 className="text-3xl font-bold leading-tight">
+          {article.title || "タイトルなし"}
+        </h1>
+        <div className="flex items-center gap-3 text-sm text-muted-foreground">
           <StatusBadge status={article.status} />
-          <h1 className="text-3xl font-bold flex-1">
-            {article.title || "タイトルなし"}
-          </h1>
-        </div>
-
-        <div className="space-y-3 text-sm text-muted-foreground">
-          {article.siteName && (
-            <p className="flex items-center gap-2">
-              <span className="font-medium">サイト:</span>
-              {article.siteName}
-            </p>
-          )}
-          <p className="flex items-center gap-2">
-            <span className="font-medium">URL:</span>
-            <a
-              href={article.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-primary hover:underline truncate flex-1"
-            >
-              {article.url}
-            </a>
-          </p>
-          <p className="flex items-center gap-2">
-            <span className="font-medium">登録日時:</span>
-            {new Date(article.createdAt).toLocaleString("ja-JP", {
+          <time className="flex items-center gap-1">
+            <Calendar className="h-3 w-3" />
+            {new Date(article.createdAt).toLocaleDateString("ja-JP", {
               year: "numeric",
               month: "2-digit",
               day: "2-digit",
-              hour: "2-digit",
-              minute: "2-digit",
             })}
-          </p>
+          </time>
         </div>
-
-        {article.description && (
-          <p className="text-muted-foreground leading-relaxed">
-            {article.description}
-          </p>
-        )}
-
-        <div>
-          <Button asChild>
+        <div className="pt-2 flex justify-center">
+          <Button
+            asChild
+            className="text-white border-0"
+            style={{ backgroundColor: 'hsl(var(--primary))' }}
+          >
             <a
               href={article.url}
               target="_blank"
               rel="noopener noreferrer"
+              aria-label="記事を新しいタブで開く"
             >
               <ExternalLink className="h-4 w-4 mr-2" />
               記事を読む
