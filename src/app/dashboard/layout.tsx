@@ -38,10 +38,6 @@ export default async function DashboardLayout({
             <p className="text-sm text-muted-foreground">
               © 2025 TechClip. All rights reserved.
             </p>
-            <div className="flex gap-4 text-sm text-muted-foreground">
-              <a href="#" className="hover:text-foreground transition-colors">利用規約</a>
-              <a href="#" className="hover:text-foreground transition-colors">プライバシーポリシー</a>
-            </div>
           </div>
         </div>
       </footer>

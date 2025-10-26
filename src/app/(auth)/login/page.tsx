@@ -59,12 +59,7 @@ export default function LoginPage() {
             </Button>
           </div>
 
-          <div className="text-center">
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              ログインすることで、<a href="#" className="underline hover:text-slate-900 dark:hover:text-slate-200 transition-colors">利用規約</a>と
-              <a href="#" className="underline hover:text-slate-900 dark:hover:text-slate-200 transition-colors">プライバシーポリシー</a>に同意したものとみなされます
-            </p>
-          </div>
+          {/* Notice removed per request: Terms and Privacy links/text */}
         </CardContent>
       </Card>
     </div>
