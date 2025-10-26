@@ -70,7 +70,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className="pt-2 flex justify-center">
           <Button
             asChild
-            className="text-white border-0"
+            className="text-white border-0 w-40"
             style={{ backgroundColor: 'hsl(var(--primary))' }}
           >
             <a

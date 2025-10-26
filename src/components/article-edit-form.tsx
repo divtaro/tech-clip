@@ -106,11 +106,11 @@ export function ArticleEditForm({
       </div>
 
       {/* 保存ボタン */}
-      <div className="flex justify-end">
+      <div className="flex justify-center">
         <Button
           type="submit"
           disabled={!hasChanges || isPending}
-          className="w-full sm:w-auto text-white border-0"
+          className="text-white border-0 w-40"
           style={{ backgroundColor: 'hsl(var(--primary))' }}
         >
           {isPending ? (
