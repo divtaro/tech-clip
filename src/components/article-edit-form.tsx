@@ -25,7 +25,7 @@ interface ArticleEditFormProps {
 
 const statusLabels = {
   TO_READ: "読みたい",
-  READING: "読んでいる",
+  READING: "読んでる",
   COMPLETED: "読んだ",
 }
 
