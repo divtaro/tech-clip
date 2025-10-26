@@ -34,7 +34,7 @@ export default async function DashboardLayout({
       {/* Footer */}
       <footer className="border-t bg-muted/30 py-6 mt-auto">
         <div className="container max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center justify-center md:justify-start">
             <p className="text-sm text-muted-foreground">
               © 2025 TechClip. All rights reserved.
             </p>
