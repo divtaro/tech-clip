@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/select"
 import { Loader2 } from "lucide-react"
 import { updateArticle } from "@/actions/article-actions"
+import { cn } from "@/lib/utils"
 import toast from "react-hot-toast"
 
 type Status = "TO_READ" | "READING" | "COMPLETED"
@@ -105,13 +106,14 @@ export function ArticleEditForm({
         />
       </div>
 
-      {/* 保存ボタン */}
-      <div className="flex justify-center">
+      {/* 保存ボタン（モバイル中央／デスクトップ左） */}
+      <div className="flex justify-center md:justify-start">
         <Button
           type="submit"
+          variant={hasChanges && !isPending ? "primary" : "default"}
           disabled={!hasChanges || isPending}
-          className="text-white border-0 w-40"
-          style={{ backgroundColor: 'hsl(var(--primary))' }}
+          className="w-40"
+          style={hasChanges && !isPending ? { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', border: 'none' } : undefined}
         >
           {isPending ? (
             <>

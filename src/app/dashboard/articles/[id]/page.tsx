@@ -67,12 +67,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             })}
           </time>
         </div>
-        <div className="pt-2 flex justify-center">
-          <Button
-            asChild
-            className="text-white border-0 w-40"
-            style={{ backgroundColor: 'hsl(var(--primary))' }}
-          >
+        <div className="pt-2 flex justify-center md:justify-start">
+          <Button asChild variant="outline" className="w-40">
             <a
               href={article.url}
               target="_blank"
