@@ -14,7 +14,7 @@ const statusConfig = {
     className: "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900",
   },
   READING: {
-    label: "読んでいる",
+    label: "読んでる",
     className: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900",
   },
   COMPLETED: {
