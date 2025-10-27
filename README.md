@@ -123,6 +123,40 @@ npm run db:studio
 npm run db:migrate
 ```
 
+## 📦 Prismaスキーマ管理
+
+このプロジェクトは開発環境と本番環境で異なるデータベースを使用します。
+
+### スキーマファイル
+
+- `prisma/schema.dev.prisma` - 開発環境用（SQLite）
+- `prisma/schema.prod.prisma` - 本番環境用（PostgreSQL）
+- `prisma/schema.prisma` - 自動生成（編集しない）
+
+### 自動切り替え
+
+開発時と本番ビルド時で、自動的に適切なスキーマが使用されます。
+```bash
+npm run dev    # 開発用スキーマ（SQLite）を使用
+npm run build  # 本番用スキーマ（PostgreSQL）を使用
+```
+
+### モデル変更時の注意
+
+データベースモデルを変更する場合は、以下の両方のファイルを更新してください：
+1. `prisma/schema.dev.prisma`
+2. `prisma/schema.prod.prisma`
+
+推奨手順：
+1. `schema.dev.prisma` を編集
+2. モデル定義部分を `schema.prod.prisma` にコピー
+3. `provider` が `postgresql` になっているか確認
+
+**注意事項**
+- `prisma/schema.prisma` は自動生成されるため、直接編集しないでください
+- モデル定義は `schema.dev.prisma` と `schema.prod.prisma` で完全に同一にしてください
+- `provider`（sqlite / postgresql）の部分のみ異なります
+
 ## 🌐 デプロイ
 
 ### Vercelへのデプロイ
