@@ -3,14 +3,16 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "npm run prisma:dev && next dev",
+    "build": "npm run prisma:prod && next build",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
-    "db:studio": "prisma studio",
-    "db:push": "prisma db push",
-    "db:migrate": "prisma migrate dev"
+    "prisma:dev": "cp prisma/schema.dev.prisma prisma/schema.prisma && prisma generate",
+    "prisma:prod": "cp prisma/schema.prod.prisma prisma/schema.prisma && prisma generate",
+    "db:studio": "npm run prisma:dev && prisma studio",
+    "db:push": "npm run prisma:dev && prisma db push",
+    "db:migrate": "npm run prisma:dev && prisma migrate dev"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.0",
