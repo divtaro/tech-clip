@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 import { auth } from '@/lib/auth'
 
-export default auth((request) => {
+export async function middleware(request: NextRequest) {
   // Basic認証チェック（環境変数が設定されている場合のみ）
   if (process.env.BASIC_AUTH_USER && process.env.BASIC_AUTH_PASSWORD) {
     const basicAuth = request.headers.get('authorization')
@@ -33,8 +34,10 @@ export default auth((request) => {
     }
   }
 
-  // Basic認証通過後、NextAuth.jsの認証チェックは自動的に行われる
-})
+  // Basic認証通過後、NextAuth.jsの認証チェック
+  // @ts-expect-error - auth() can accept NextRequest
+  return auth(request)
+}
 
 export const config = {
   matcher: ['/dashboard/:path*'],
