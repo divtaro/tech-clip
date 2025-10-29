@@ -1,9 +1,5 @@
-// ===========================================
-// 🔧 開発環境用設定（SQLite）
-// ===========================================
-
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
