@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth } from '@/lib/auth'
 
-export async function middleware(request: NextRequest) {
+export function middleware(request: NextRequest) {
   const basicUser = process.env.BASIC_AUTH_USER
   const basicPassword = process.env.BASIC_AUTH_PASSWORD
 
-  // 1. Basic認証チェック（環境変数が設定されている場合のみ）
+  // Basic認証チェック（環境変数が設定されている場合のみ）
   if (basicUser && basicPassword) {
     const basicAuth = request.headers.get('authorization')
 
@@ -38,14 +37,6 @@ export async function middleware(request: NextRequest) {
         },
       })
     }
-  }
-
-  // 2. Basic認証通過後、NextAuth.jsのセッションチェック
-  const session = await auth()
-
-  // /dashboardへのアクセスでセッションがない場合はログインページへ
-  if (request.nextUrl.pathname.startsWith('/dashboard') && !session) {
-    return NextResponse.redirect(new URL('/login', request.url))
   }
 
   return NextResponse.next()
