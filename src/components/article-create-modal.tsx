@@ -322,13 +322,13 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
               </Card>
 
               {/* ステータス選択 */}
-              <div className="space-y-2" suppressHydrationWarning>
+              <div className="space-y-2">
                 <Label htmlFor="status">ステータス</Label>
                 <Select value={status} onValueChange={(value) => setStatus(value as Status)}>
-                  <SelectTrigger id="status" suppressHydrationWarning>
+                  <SelectTrigger id="status">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent position="popper" sideOffset={4}>
                     <SelectItem value="TO_READ">読みたい</SelectItem>
                     <SelectItem value="READING">読んでる</SelectItem>
                     <SelectItem value="COMPLETED">読んだ</SelectItem>
