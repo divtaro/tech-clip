@@ -1,14 +1,12 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
+import { useState, useMemo } from "react"
 import { ArticleCard } from "@/components/article-card"
 import { ArticleCreateModal } from "@/components/article-create-modal"
 import { EmptyState } from "@/components/empty-state"
-import { Plus } from "lucide-react"
 import { deleteArticle } from "@/actions/article-actions"
 import toast from "react-hot-toast"
-import { motion } from "framer-motion"
+import { useSearch } from "@/contexts/search-context"
 
 type Status = "TO_READ" | "READING" | "COMPLETED"
 
@@ -25,35 +23,26 @@ interface Article {
 
 interface DashboardClientProps {
   initialArticles: Article[]
-  searchQuery: string
 }
 
-export function DashboardClient({ initialArticles, searchQuery }: DashboardClientProps) {
+export function DashboardClient({ initialArticles }: DashboardClientProps) {
   const [selectedStatus, setSelectedStatus] = useState<Status | "ALL">("ALL")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
+  const { searchQuery } = useSearch()
 
-  const filteredArticles = initialArticles.filter((article) => {
-    const matchesStatus = selectedStatus === "ALL" || article.status === selectedStatus
-    const matchesSearch =
-      searchQuery === "" ||
-      article.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesStatus && matchesSearch
-  })
+  // useMemoで検索とフィルタリングを最適化
+  const filteredArticles = useMemo(() => {
+    return initialArticles.filter((article) => {
+      const matchesStatus = selectedStatus === "ALL" || article.status === selectedStatus
+      const matchesSearch =
+        searchQuery === "" ||
+        article.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        article.siteName?.toLowerCase().includes(searchQuery.toLowerCase())
+      return matchesStatus && matchesSearch
+    })
+  }, [initialArticles, selectedStatus, searchQuery])
 
-  // フィルタ後の各ステータスの件数を計算
-  const searchedArticles = initialArticles.filter((article) => {
-    const matchesSearch =
-      searchQuery === "" ||
-      article.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.description?.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesSearch
-  })
-
-  const allCount = searchedArticles.length
-  const toReadCount = searchedArticles.filter((a) => a.status === "TO_READ").length
-  const readingCount = searchedArticles.filter((a) => a.status === "READING").length
-  const completedCount = searchedArticles.filter((a) => a.status === "COMPLETED").length
 
   const handleDelete = async (id: string) => {
     const result = await deleteArticle(id)

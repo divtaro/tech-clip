@@ -1,38 +1,19 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Search, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { useDebouncedCallback } from "use-debounce"
+import { useSearch } from "@/contexts/search-context"
 
 export function DashboardSearchBar() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [query, setQuery] = useState(searchParams.get("q") || "")
-
-  const debouncedSearch = useDebouncedCallback((value: string) => {
-    if (value) {
-      router.push(`/dashboard?q=${encodeURIComponent(value)}`)
-    } else {
-      router.push("/dashboard")
-    }
-  }, 300)
-
-  useEffect(() => {
-    setQuery(searchParams.get("q") || "")
-  }, [searchParams])
+  const { searchQuery, setSearchQuery } = useSearch()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value
-    setQuery(value)
-    debouncedSearch(value)
+    setSearchQuery(e.target.value)
   }
 
   const handleClear = () => {
-    setQuery("")
-    router.push("/dashboard")
+    setSearchQuery("")
   }
 
   return (
@@ -42,11 +23,10 @@ export function DashboardSearchBar() {
         type="text"
         placeholder="検索"
         className="pl-10 pr-10 focus:border-primary focus:ring-1 focus:ring-primary"
-        value={query}
+        value={searchQuery}
         onChange={handleChange}
-        suppressHydrationWarning
       />
-      {query && (
+      {searchQuery && (
         <Button
           variant="ghost"
           size="sm"
