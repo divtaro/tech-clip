@@ -27,6 +27,7 @@ interface DashboardClientProps {
 }
 
 export function DashboardClient({ initialArticles }: DashboardClientProps) {
+  const [articles, setArticles] = useState<Article[]>(initialArticles)
   const [selectedStatus, setSelectedStatus] = useState<Status | "ALL">("ALL")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const { searchQuery } = useSearch()
@@ -47,7 +48,7 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
 
   // useMemoで検索とフィルタリングを最適化
   const filteredArticles = useMemo(() => {
-    return initialArticles.filter((article) => {
+    return articles.filter((article) => {
       const matchesStatus = selectedStatus === "ALL" || article.status === selectedStatus
       const matchesSearch =
         searchQuery === "" ||
@@ -56,21 +57,25 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
         article.siteName?.toLowerCase().includes(searchQuery.toLowerCase())
       return matchesStatus && matchesSearch
     })
-  }, [initialArticles, selectedStatus, searchQuery])
+  }, [articles, selectedStatus, searchQuery])
 
 
   const handleDelete = async (id: string) => {
+    // 楽観的UI更新: 先にクライアント側で削除
+    setArticles(prev => prev.filter(article => article.id !== id))
+
     const result = await deleteArticle(id)
     if (result.success) {
       toast.success("記事を削除しました")
-      // revalidatePathで自動的に再取得される
     } else {
+      // 失敗時は元に戻す
+      setArticles(initialArticles)
       toast.error(result.error || "記事の削除に失敗しました")
     }
   }
 
   // 記事が0件の場合は空状態を表示
-  if (initialArticles.length === 0) {
+  if (articles.length === 0) {
     return (
       <div>
         <EmptyState onAddClick={() => setIsCreateModalOpen(true)} />
