@@ -6,6 +6,14 @@ export function middleware(request: NextRequest) {
 
   // Basic認証チェック（環境変数が設定されている場合のみ）
   if (basicUser && basicPassword) {
+    // Cookie確認（認証済みセッション）
+    const authCookie = request.cookies.get('basic-auth-verified')
+
+    // すでに認証済みの場合はスキップ
+    if (authCookie?.value === 'true') {
+      return NextResponse.next()
+    }
+
     const basicAuth = request.headers.get('authorization')
 
     if (!basicAuth) {
@@ -29,6 +37,16 @@ export function middleware(request: NextRequest) {
           },
         })
       }
+
+      // 認証成功時、Cookieをセット（永続的に保持）
+      const response = NextResponse.next()
+      response.cookies.set('basic-auth-verified', 'true', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 60 * 60 * 24 * 365 * 10, // 10年間（実質永続的）
+      })
+      return response
     } catch (error) {
       return new NextResponse('Invalid credentials', {
         status: 401,
