@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -35,6 +36,7 @@ export function ArticleEditForm({
   initialStatus,
   initialMemo,
 }: ArticleEditFormProps) {
+  const router = useRouter()
   const [status, setStatus] = useState<Status>(initialStatus)
   const [memo, setMemo] = useState(initialMemo || "")
   const [isPending, startTransition] = useTransition()
@@ -63,6 +65,7 @@ export function ArticleEditForm({
 
       if (result.success) {
         toast.success("保存しました")
+        router.push("/dashboard")
       } else {
         toast.error(result.error || "保存に失敗しました")
       }
