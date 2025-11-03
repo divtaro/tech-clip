@@ -1,6 +1,7 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect, useRef } from "react"
+import { useSearchParams, useRouter } from "next/navigation"
 import { ArticleCard } from "@/components/article-card"
 import { ArticleCreateModal } from "@/components/article-create-modal"
 import { EmptyState } from "@/components/empty-state"
@@ -29,6 +30,21 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
   const [selectedStatus, setSelectedStatus] = useState<Status | "ALL">("ALL")
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const { searchQuery } = useSearch()
+  const searchParams = useSearchParams()
+  const router = useRouter()
+  const hasShownToast = useRef(false)
+
+  // 記事更新後のトースト通知
+  useEffect(() => {
+    const updated = searchParams.get("updated")
+    if (updated === "true" && !hasShownToast.current) {
+      hasShownToast.current = true
+      // クエリパラメータをクリア（トーストより先に実行）
+      router.replace("/dashboard", { scroll: false })
+      toast.success("保存しました")
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // useMemoで検索とフィルタリングを最適化
   const filteredArticles = useMemo(() => {

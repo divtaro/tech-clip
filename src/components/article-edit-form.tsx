@@ -64,8 +64,7 @@ export function ArticleEditForm({
       })
 
       if (result.success) {
-        toast.success("保存しました")
-        router.push("/dashboard")
+        router.push("/dashboard?updated=true")
       } else {
         toast.error(result.error || "保存に失敗しました")
       }
