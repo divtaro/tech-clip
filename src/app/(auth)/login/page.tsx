@@ -26,7 +26,7 @@ export default function LoginPage() {
             TechClip
           </CardTitle>
           <CardDescription className="text-base text-slate-600 dark:text-slate-400">
-            技術記事を一元管理して学習を加速
+            技術記事を積読しよう
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6 pt-2 pb-8">

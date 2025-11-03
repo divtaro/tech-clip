@@ -7,8 +7,8 @@ import { ThemeProvider } from "@/components/theme-provider";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "TechClip - 技術記事の積読管理",
-  description: "技術記事を保存・整理・管理するアプリケーション",
+  title: "TechClip - 技術記事の積読",
+  description: "気になった技術記事を登録・管理するアプリケーション",
 };
 
 export default function RootLayout({
