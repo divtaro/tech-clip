@@ -102,8 +102,7 @@ export async function deleteArticle(id: string) {
       where: { id },
     })
 
-    // revalidatePath を削除してクライアント側で状態管理
-    // revalidatePath("/dashboard")
+    revalidatePath("/dashboard")
 
     return { success: true }
   } catch (error) {
@@ -159,9 +158,8 @@ export async function updateArticle(articleId: string, input: UpdateArticleInput
       data: validated,
     })
 
-    // revalidatePath を削除してスクロール位置を保持
-    // revalidatePath("/dashboard")
-    // revalidatePath(`/dashboard/articles/${articleId}`)
+    revalidatePath("/dashboard")
+    revalidatePath(`/dashboard/articles/${articleId}`)
 
     return { success: true }
   } catch (error) {
