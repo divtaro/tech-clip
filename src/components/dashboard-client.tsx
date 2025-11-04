@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useEffect, useRef } from "react"
-import { useSearchParams } from "next/navigation"
+import { useSearchParams, useRouter } from "next/navigation"
 import { ArticleCard } from "@/components/article-card"
 import { ArticleCreateModal } from "@/components/article-create-modal"
 import { EmptyState } from "@/components/empty-state"
@@ -31,6 +31,7 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const { searchQuery } = useSearch()
   const searchParams = useSearchParams()
+  const router = useRouter()
   const hasShownToast = useRef(false)
 
   // 記事更新後のトースト通知
@@ -38,9 +39,9 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
     const updated = searchParams.get("updated")
     if (updated === "true" && !hasShownToast.current) {
       hasShownToast.current = true
+      // クエリパラメータをクリア（トーストより先に実行）
+      router.replace("/dashboard", { scroll: false })
       toast.success("保存しました")
-      // URLをクリーンアップ（履歴を置き換え、スクロール位置を保持）
-      window.history.replaceState({}, "", "/dashboard")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
