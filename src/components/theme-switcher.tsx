@@ -29,7 +29,7 @@ export function ThemeSwitcher() {
   }
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="h-9 w-9">
           {theme === "light" ? (

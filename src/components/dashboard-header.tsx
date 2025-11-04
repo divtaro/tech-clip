@@ -43,7 +43,7 @@ export function DashboardHeader({ user, logoutButton }: DashboardHeaderProps) {
           {/* Theme Switcher and User Dropdown */}
           <div className="flex items-center gap-2">
             <ThemeSwitcher />
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                   <Avatar>
