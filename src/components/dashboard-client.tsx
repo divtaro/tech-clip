@@ -86,11 +86,11 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
   return (
     <div>
       {/* ステータスフィルター - モダンなタブスタイル with アニメーション + Sticky */}
-      <div className="sticky top-0 z-[60] border-b shadow-sm pb-3 -mx-4 px-4 pt-4 mb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
-        <div className="flex justify-center gap-6">
+      <div className="md:sticky top-0 z-[60] border-b pb-3 px-4 pt-4 mb-4" style={{ backgroundColor: 'hsl(var(--background))' }}>
+        <div className="flex w-full justify-center gap-6 overflow-x-auto">
         <button
           onClick={() => setSelectedStatus("TO_READ")}
-          className={`pb-3 px-2 text-sm transition-all relative ${
+          className={`pb-3 px-2 text-sm whitespace-nowrap transition-all relative ${
             selectedStatus === "TO_READ"
               ? "text-primary font-bold"
               : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
@@ -103,7 +103,7 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
         </button>
         <button
           onClick={() => setSelectedStatus("READING")}
-          className={`pb-3 px-2 text-sm transition-all relative ${
+          className={`pb-3 px-2 text-sm whitespace-nowrap transition-all relative ${
             selectedStatus === "READING"
               ? "text-primary font-bold"
               : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
@@ -116,7 +116,7 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
         </button>
         <button
           onClick={() => setSelectedStatus("COMPLETED")}
-          className={`pb-3 px-2 text-sm transition-all relative ${
+          className={`pb-3 px-2 text-sm whitespace-nowrap transition-all relative ${
             selectedStatus === "COMPLETED"
               ? "text-primary font-bold"
               : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
@@ -129,7 +129,7 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
         </button>
         <button
           onClick={() => setSelectedStatus("ALL")}
-          className={`pb-3 px-2 text-sm transition-all relative ${
+          className={`pb-3 px-2 text-sm whitespace-nowrap transition-all relative ${
             selectedStatus === "ALL"
               ? "text-primary font-bold"
               : "text-muted-foreground/60 hover:text-foreground hover:bg-accent/30 hover:font-bold font-medium"
@@ -169,8 +169,12 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
 
       {/* FAB（記事追加ボタン） */}
       <button
-        className="fixed bottom-8 right-8 rounded-full h-16 w-16 shadow-2xl hover:shadow-2xl transition-all z-50 border-0 flex items-center justify-center text-white text-4xl leading-none pb-1"
-        style={{ backgroundColor: 'hsl(var(--primary))', fontWeight: 300 }}
+        className="fixed right-8 rounded-full h-16 w-16 shadow-2xl hover:shadow-2xl transition-all z-50 border-0 flex items-center justify-center text-white text-4xl leading-none pb-1"
+        style={{
+          backgroundColor: 'hsl(var(--primary))',
+          fontWeight: 300,
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 2rem)'
+        }}
         onClick={() => setIsCreateModalOpen(true)}
         aria-label="記事を登録"
       >

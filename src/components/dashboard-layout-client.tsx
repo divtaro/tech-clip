@@ -21,12 +21,12 @@ export function DashboardLayoutClient({
 }: DashboardLayoutClientProps) {
   return (
     <SearchProvider>
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-[100dvh] bg-background flex flex-col">
         {/* Header */}
         <DashboardHeader user={user} logoutButton={logoutButton} />
 
         {/* Main Content */}
-        <main className="container max-w-7xl mx-auto px-4 pt-2 pb-6 flex-1">
+        <main className="container max-w-7xl mx-auto px-4 pt-2 pb-28 flex-1 relative">
           {children}
         </main>
 

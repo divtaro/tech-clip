@@ -75,16 +75,22 @@
 }
 
 html {
-  overflow-y: scroll;
-  overflow-x: hidden;
+  /* Let body be the scroll container to avoid iOS jump-to-top */
+  height: 100%;
 }
 
 body {
   background-color: hsl(var(--background));
   color: hsl(var(--foreground));
+  height: 100%;
   max-width: 100%;
   overflow-x: hidden;
+  overflow-y: auto; /* Native momentum scroll on iOS */
+  -webkit-overflow-scrolling: touch;
+  /* Allow natural overscroll and pull-to-refresh */
 }
+
+/* (Reverted) no extra iOS-specific compositing tweaks */
 
 /* モーダルとセレクトボックスの透過を防ぐ */
 [role="dialog"],
