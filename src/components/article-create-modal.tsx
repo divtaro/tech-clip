@@ -27,21 +27,9 @@ import toast from "react-hot-toast"
 import { z } from "zod"
 import { useDebouncedCallback } from "use-debounce"
 
-interface Article {
-  id: string
-  url: string
-  title: string | null
-  description: string | null
-  ogImage: string | null
-  siteName: string | null
-  status: Status
-  createdAt: Date
-}
-
 interface ArticleCreateModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  onArticleCreated?: (article: Article) => void
 }
 
 type Status = "TO_READ" | "READING" | "COMPLETED"
@@ -117,7 +105,7 @@ const isValidUrl = (urlString: string): boolean => {
   }
 }
 
-export function ArticleCreateModal({ open, onOpenChange, onArticleCreated }: ArticleCreateModalProps) {
+export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalProps) {
   const [url, setUrl] = useState("")
   const [urlError, setUrlError] = useState("")
   const [ogpData, setOgpData] = useState<OGPData | null>(null)
@@ -222,10 +210,6 @@ export function ArticleCreateModal({ open, onOpenChange, onArticleCreated }: Art
 
       if (result.success) {
         toast.success("記事を登録しました")
-        // 新しい記事をダッシュボードに通知
-        if (onArticleCreated && result.data) {
-          onArticleCreated(result.data as Article)
-        }
         handleClose()
       } else {
         toast.error(result.error || "記事の登録に失敗しました")

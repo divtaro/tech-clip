@@ -50,8 +50,7 @@ export async function createArticle(input: CreateArticleInput) {
       },
     })
 
-    // revalidatePath を削除してスクロール位置を保持
-    // revalidatePath("/dashboard")
+    revalidatePath("/dashboard")
 
     return { success: true, data: article }
   } catch (error) {

@@ -74,11 +74,6 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
     }
   }
 
-  const handleArticleCreated = (newArticle: Article) => {
-    // 新しい記事をリストの先頭に追加
-    setArticles(prev => [newArticle, ...prev])
-  }
-
   // 記事が0件の場合は空状態を表示
   if (articles.length === 0) {
     return (
@@ -87,7 +82,6 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
         <ArticleCreateModal
           open={isCreateModalOpen}
           onOpenChange={setIsCreateModalOpen}
-          onArticleCreated={handleArticleCreated}
         />
       </div>
     )
@@ -191,7 +185,6 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
       <ArticleCreateModal
         open={isCreateModalOpen}
         onOpenChange={setIsCreateModalOpen}
-        onArticleCreated={handleArticleCreated}
       />
     </div>
   )
