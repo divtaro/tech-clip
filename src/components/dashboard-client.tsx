@@ -161,7 +161,7 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
         </div>
       ) : (
         <div className="text-center py-12">
-          <p className="text-muted-foreground text-lg">
+          <p className="text-muted-foreground text-sm">
             記事が見つかりませんでした
           </p>
         </div>
