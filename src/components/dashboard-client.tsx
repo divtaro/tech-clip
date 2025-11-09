@@ -34,14 +34,24 @@ export function DashboardClient({ initialArticles }: DashboardClientProps) {
   const router = useRouter()
   const hasShownToast = useRef(false)
 
-  // 記事更新後のトースト通知
+  // 記事更新/登録/削除後のトースト通知
   useEffect(() => {
     const updated = searchParams.get("updated")
+    const created = searchParams.get("created")
+    const deleted = searchParams.get("deleted")
+
     if (updated === "true" && !hasShownToast.current) {
       hasShownToast.current = true
-      // クエリパラメータをクリア（トーストより先に実行）
       router.replace("/dashboard", { scroll: false })
       toast.success("保存しました")
+    } else if (created === "true" && !hasShownToast.current) {
+      hasShownToast.current = true
+      router.replace("/dashboard", { scroll: false })
+      toast.success("記事を登録しました")
+    } else if (deleted === "true" && !hasShownToast.current) {
+      hasShownToast.current = true
+      router.replace("/dashboard", { scroll: false })
+      toast.success("記事を削除しました")
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

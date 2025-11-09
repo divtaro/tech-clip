@@ -46,8 +46,8 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
   const handleDelete = async () => {
     setIsDeleting(true)
     await onDelete?.(article.id)
-    // 削除完了後にダッシュボードにリダイレクト
-    window.location.href = '/dashboard'
+    // リダイレクト後にトースト通知を表示
+    window.location.href = '/dashboard?deleted=true'
   }
 
   const handleCardClick = (e: React.MouseEvent) => {
