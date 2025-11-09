@@ -211,6 +211,7 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
       if (result.success) {
         toast.success("記事を登録しました")
         handleClose()
+        window.location.href = '/dashboard'
       } else {
         toast.error(result.error || "記事の登録に失敗しました")
       }
