@@ -19,7 +19,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { MoreVertical, Pencil, ExternalLink, Trash2, Calendar } from "lucide-react"
+import { MoreVertical, Pencil, ExternalLink, Trash2, Calendar, Loader2 } from "lucide-react"
 
 type Status = "TO_READ" | "READING" | "COMPLETED"
 
@@ -41,10 +41,13 @@ interface ArticleCardProps {
 
 export function ArticleCard({ article, onDelete }: ArticleCardProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  const handleDelete = () => {
-    onDelete?.(article.id)
-    setShowDeleteDialog(false)
+  const handleDelete = async () => {
+    setIsDeleting(true)
+    await onDelete?.(article.id)
+    // 削除完了後にダッシュボードにリダイレクト
+    window.location.href = '/dashboard'
   }
 
   const handleCardClick = (e: React.MouseEvent) => {
@@ -153,7 +156,7 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
       </div>
 
       {/* 削除確認ダイアログ */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+      <Dialog open={showDeleteDialog} onOpenChange={isDeleting ? undefined : setShowDeleteDialog}>
         <DialogContent className="max-w-sm" hideClose>
           <DialogHeader>
             <DialogTitle className="text-center">記事を削除しますか？</DialogTitle>
@@ -165,13 +168,22 @@ export function ArticleCard({ article, onDelete }: ArticleCardProps) {
                 e.stopPropagation()
                 handleDelete()
               }}
+              disabled={isDeleting}
               className="w-40 text-white border-0"
               style={{ backgroundColor: 'hsl(0 84.2% 60.2%)' }}
             >
-              削除
+              {isDeleting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  削除中
+                </>
+              ) : (
+                "削除"
+              )}
             </Button>
             <Button
               onClick={() => setShowDeleteDialog(false)}
+              disabled={isDeleting}
               className="w-40 border"
               style={{ borderColor: 'hsl(0 0% 60%)' }}
             >
