@@ -145,3 +145,91 @@ button,
   background-color: hsl(var(--accent)) !important;
   color: hsl(var(--accent-foreground)) !important;
 }
+
+/* ボタンのホバー/タップ時の視覚的フィードバック */
+/* PC: ホバー時に色が変わる、スマホ: タップ時に色が変わる */
+
+/* 全ボタン共通のトランジション */
+button:not(:disabled),
+[role="button"]:not(:disabled),
+[type="button"]:not(:disabled),
+[type="submit"]:not(:disabled),
+a.inline-flex {
+  transition: opacity 0.2s ease, transform 0.1s ease, background-color 0.2s ease;
+}
+
+/* PC: ホバー時に少し縮小（セレクトボックスのトリガーは除外） */
+@media (hover: hover) and (pointer: fine) {
+  button:hover:not(:disabled):not([role="combobox"]),
+  [role="button"]:hover:not(:disabled):not([role="combobox"]),
+  [type="button"]:hover:not(:disabled):not([role="combobox"]),
+  [type="submit"]:hover:not(:disabled),
+  a.inline-flex:hover {
+    transform: scale(0.98);
+  }
+
+  /* プライマリー背景色のボタンをホバー時に少し薄く */
+  button[style*="background-color"]:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  /* Tailwindのprimaryバリアントを持つボタン */
+  button.bg-primary:hover:not(:disabled),
+  button[class*="bg-primary"]:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  /* デストラクティブボタン（削除ボタンなど） */
+  button[style*="hsl(0 84.2% 60.2%)"]:hover:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  /* ゴーストボタンとアウトラインボタン */
+  button[class*="variant-ghost"]:hover:not(:disabled),
+  button[class*="variant-outline"]:hover:not(:disabled),
+  a.inline-flex:hover {
+    background-color: hsl(var(--accent) / 0.5) !important;
+  }
+}
+
+/* スマホ: タップ時に縮小と色変更 */
+@media (hover: none) and (pointer: coarse) {
+  button:active:not(:disabled),
+  [role="button"]:active:not(:disabled),
+  [type="button"]:active:not(:disabled),
+  [type="submit"]:active:not(:disabled),
+  a.inline-flex:active {
+    transform: scale(0.98);
+  }
+
+  /* プライマリー背景色のボタンをタップ時に少し薄く */
+  button[style*="background-color"]:active:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  /* Tailwindのprimaryバリアントを持つボタン */
+  button.bg-primary:active:not(:disabled),
+  button[class*="bg-primary"]:active:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  /* デストラクティブボタン（削除ボタンなど） */
+  button[style*="hsl(0 84.2% 60.2%)"]:active:not(:disabled) {
+    opacity: 0.85;
+  }
+
+  /* ゴーストボタンとアウトラインボタン */
+  button[class*="variant-ghost"]:active:not(:disabled),
+  button[class*="variant-outline"]:active:not(:disabled),
+  a.inline-flex:active {
+    background-color: hsl(var(--accent) / 0.5) !important;
+  }
+}
+
+/* モバイル向けのタップハイライトを無効化（カスタムフィードバックを使用） */
+button,
+[role="button"],
+[type="button"],
+[type="submit"] {
+  -webkit-tap-highlight-color: transparent;
+}
