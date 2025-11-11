@@ -112,10 +112,10 @@ export function ArticleEditForm({
       <div className="flex justify-center md:justify-start">
         <Button
           type="submit"
-          variant={hasChanges && !isPending ? "primary" : "default"}
+          variant="primary"
           disabled={!hasChanges || isPending}
           className="w-40"
-          style={hasChanges && !isPending ? { backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', border: 'none' } : undefined}
+          style={{ backgroundColor: 'hsl(var(--primary))', color: 'hsl(var(--primary-foreground))', border: 'none' }}
         >
           {isPending ? (
             <>
