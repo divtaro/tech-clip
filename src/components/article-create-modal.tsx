@@ -235,17 +235,17 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-2xl max-h-[85vh] flex flex-col p-0"
+        className="max-w-2xl max-h-[90vh] md:max-h-[90vh] max-h-[85vh] flex flex-col p-0"
         onOpenAutoFocus={(e) => e.preventDefault()}
       >
-        <DialogHeader className="space-y-3 px-6 pt-6 pb-4 shrink-0">
+        <DialogHeader className="space-y-3 px-6 pt-12 md:pt-10 pb-6 shrink-0">
           <DialogTitle>記事を登録</DialogTitle>
           <DialogDescription>
             記事のURLを入力すると自動で情報を取得します
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 px-6 pb-6 overflow-y-auto flex-1">
+        <div className="space-y-4 px-8 pb-8 overflow-y-auto flex-1 max-h-[calc(90vh-180px)]">
           {/* URL入力 */}
           <div className="space-y-2">
             <div className="relative">
@@ -353,7 +353,7 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
         </div>
 
         {ogpData && (
-          <DialogFooter className="px-6 py-4 border-t bg-background shrink-0 !flex !flex-row !justify-center">
+          <DialogFooter className="px-6 py-6 md:py-4 border-t bg-background shrink-0 !flex !flex-row !justify-center">
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || isFetching}
