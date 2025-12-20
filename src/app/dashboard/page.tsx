@@ -1,6 +1,8 @@
 import { getArticles } from "@/actions/article-actions"
 import { DashboardClient } from "@/components/dashboard-client"
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardPage() {
   const result = await getArticles()
 
