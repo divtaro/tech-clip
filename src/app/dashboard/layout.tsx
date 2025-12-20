@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import { DashboardLayoutClient } from "@/components/dashboard-layout-client"
 import { LogoutButton } from "./logout-button"
 
+export const dynamic = 'force-dynamic'
+
 export default async function DashboardLayout({
   children,
 }: {

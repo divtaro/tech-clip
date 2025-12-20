@@ -8,6 +8,8 @@ import { ArrowLeft, ExternalLink, Calendar } from "lucide-react"
 import Link from "next/link"
 import { StatusBadge } from "@/components/status-badge"
 
+export const dynamic = 'force-dynamic'
+
 interface ArticlePageProps {
   params: Promise<{
     id: string
