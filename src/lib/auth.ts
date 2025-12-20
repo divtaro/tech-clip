@@ -9,11 +9,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Google({
       clientId: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
     }),
   ],
   pages: {
     signIn: "/login",
   },
+  trustHost: true,
+  // 開発環境（ngrok使用時）のみセキュアCookieを無効化
+  // 本番環境では自動的にセキュアCookieが有効になる
+  useSecureCookies: process.env.NODE_ENV === "production",
   callbacks: {
     session({ session, user }) {
       if (session.user) {
