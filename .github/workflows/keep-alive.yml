@@ -15,11 +15,21 @@ jobs:
 
     steps:
       - name: Ping health endpoint
+        env:
+          HEALTH_CHECK_URL: ${{ secrets.PRODUCTION_URL }}
         run: |
-          response=$(curl -s -w "\n%{http_code}" https://your-production-domain.vercel.app/api/health)
+          # 環境変数が設定されていない場合はエラー
+          if [ -z "$HEALTH_CHECK_URL" ]; then
+            echo "Error: PRODUCTION_URL secret is not set"
+            echo "Please set PRODUCTION_URL in repository secrets"
+            exit 1
+          fi
+
+          response=$(curl -s -w "\n%{http_code}" "${HEALTH_CHECK_URL}/api/health")
           http_code=$(echo "$response" | tail -n1)
           body=$(echo "$response" | head -n-1)
 
+          echo "Target URL: ${HEALTH_CHECK_URL}/api/health"
           echo "HTTP Status: $http_code"
           echo "Response: $body"
 
