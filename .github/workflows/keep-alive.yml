@@ -1,0 +1,31 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    # 毎週日曜日と水曜日 0:00 UTC (日本時間 9:00) に実行
+    # 週2回実行することで、1回失敗してもSupabaseの7日間制限内に次回実行される
+    - cron: '0 0 * * 0,3'
+
+  # 手動実行も可能にする
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping health endpoint
+        run: |
+          response=$(curl -s -w "\n%{http_code}" https://your-production-domain.vercel.app/api/health)
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Health check failed with status $http_code"
+            exit 1
+          fi
+
+          echo "Health check successful!"
