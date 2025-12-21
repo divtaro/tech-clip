@@ -65,10 +65,11 @@ export const config = {
     /*
      * Match all request paths except for the ones starting with:
      * - api/auth (NextAuth.js routes)
+     * - api/health (Health check endpoint)
      * - _next/static (static files)
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api/auth|_next/static|_next/image|favicon.ico).*)',
+    '/((?!api/auth|api/health|_next/static|_next/image|favicon.ico).*)',
   ],
 }
