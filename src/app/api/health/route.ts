@@ -5,13 +5,19 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    // データベース接続を確認（簡単なクエリ）
-    await prisma.$queryRaw`SELECT 1`
+    // 実際のテーブルにアクセスしてSupabaseのアクティビティとして検出されるようにする
+    // SELECT 1 だけでは Supabase がアクティビティとしてカウントしない
+    const userCount = await prisma.user.count()
+    const articleCount = await prisma.article.count()
 
     return NextResponse.json({
       status: "ok",
       timestamp: new Date().toISOString(),
-      database: "connected"
+      database: "connected",
+      stats: {
+        users: userCount,
+        articles: articleCount
+      }
     })
   } catch (error) {
     console.error("Health check failed:", error)
