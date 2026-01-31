@@ -1,14 +1,24 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import { supabase } from "@/lib/supabase"
 
 export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    // 実際のテーブルにアクセスしてSupabaseのアクティビティとして検出されるようにする
-    // SELECT 1 だけでは Supabase がアクティビティとしてカウントしない
-    const userCount = await prisma.user.count()
-    const articleCount = await prisma.article.count()
+    // Supabase JS Client 経由でアクセスすることで、Supabase がアクティビティとして検出する
+    // Prisma の直接接続（DATABASE_URL）は PostgreSQL への直接接続のため、
+    // Supabase のアクティビティ監視をバイパスしてしまう
+    const { count: userCount, error: userError } = await supabase
+      .from('User')
+      .select('*', { count: 'exact', head: true })
+
+    const { count: articleCount, error: articleError } = await supabase
+      .from('Article')
+      .select('*', { count: 'exact', head: true })
+
+    if (userError || articleError) {
+      throw new Error(userError?.message || articleError?.message)
+    }
 
     return NextResponse.json({
       status: "ok",
