@@ -749,13 +749,13 @@ ls prisma/
 #### 3-1. システム環境変数が`.env.local`より優先される
 
 **症状**
-- `.env.local`に`BASIC_AUTH_USER="tech-clip"`と設定しているのに、`admin`が読み込まれる
+- `.env.local`に`BASIC_AUTH_USER="myuser"`と設定しているのに、`admin`が読み込まれる
 - console.logで確認すると、意図しない値が表示される
 
 **エラーメッセージ**
 ```javascript
 console.log(process.env.BASIC_AUTH_USER)
-// 期待値: "tech-clip"
+// 期待値: "myuser"
 // 実際の値: "admin"
 ```
 
@@ -861,7 +861,7 @@ npm run dev
 
 **方法3: 一時的に環境変数を上書き**
 ```bash
-BASIC_AUTH_USER="tech-clip" BASIC_AUTH_PASSWORD='パスワード' npm run dev
+BASIC_AUTH_USER="myuser" BASIC_AUTH_PASSWORD='パスワード' npm run dev
 ```
 
 **確認方法**
@@ -1297,13 +1297,13 @@ The domain you are trying to add is invalid, please enter a valid domain name an
 3. 再度ドメインを追加
 
 **方法2: 入力内容を確認**
-- ❌ `https://tech-clip.vercel.app`（プロトコル付き）
-- ✅ `tech-clip.vercel.app`（ドメイン名のみ）
+- ❌ `https://your-app-name.vercel.app`（プロトコル付き）
+- ✅ `your-app-name.vercel.app`（ドメイン名のみ）
 - 余分なスペースがないか確認
 
 **方法3: プロジェクト名を確認**
 1. Vercelダッシュボードで現在のプロジェクト名を確認
-2. プロジェクト名が`tech-clip`であることを確認
+2. プロジェクト名を確認（例: `your-project-name`）
 3. `[プロジェクト名].vercel.app`の形式で登録
 
 **方法4: 既存のドメインを確認**
@@ -1319,6 +1319,359 @@ The domain you are trying to add is invalid, please enter a valid domain name an
 **予防策**
 - ドメインを削除する前に、新しいドメインを先に追加してから古いものを削除
 - 削除後は少し時間を置いてから再登録
+
+---
+
+#### 5-3. Supabaseデータベース接続エラー（Tenant or user not found）
+
+**エラーコード**: PrismaClientInitializationError
+**発生タイミング**: 本番環境（Vercel）でGoogle OAuth認証時
+
+**症状**
+- 本番環境でGoogle認証を実行すると`/api/auth/error`にリダイレクトされる
+- Vercelのログで「Tenant or user not found」エラーが表示される
+- ローカル環境では正常に動作する
+
+**エラーメッセージ**
+```
+[auth][error] AdapterError: Read more at https://errors.authjs.dev#adaptererror
+[auth][cause]: PrismaClientInitializationError:
+Invalid `prisma.account.findUnique()` invocation:
+
+Error querying the database: FATAL: Tenant or user not found
+    at ei.handleRequestError (/var/task/node_modules/@prisma/client/runtime/library.js:121:7568)
+    ...
+```
+
+**原因**
+1. **Supabaseプロジェクトの一時停止**: 無料プランで7日間非アクティブな場合、自動的に一時停止される
+2. **DATABASE_URLの認証情報エラー**: ユーザー名、パスワード、ホスト名が間違っている
+3. **データベーススキーマ未適用**: マイグレーションが実行されていない
+
+**Supabase無料プランの一時停止ポリシー**
+
+- **非アクティブ期間**: 7日間データベースへのアクセスがないと自動停止
+- **猶予期間**: 停止後88日間は手動で再開可能
+- **完全削除**: 88日経過後はプロジェクトが完全削除され、復旧不可能
+- **データ保持**: 猶予期間内はすべてのデータが保持される
+
+**解決手順**
+
+**ステップ1: Supabaseプロジェクトの状態を確認**
+
+1. **Supabaseダッシュボードにアクセス**:
+   - https://supabase.com/dashboard
+
+2. **プロジェクトの状態を確認**:
+   ```
+   The project "Your Project" is currently paused
+   All data, including backups and storage objects, remains safe.
+   You can resume this project from the dashboard within 88 days.
+   ```
+
+3. **一時停止の確認**:
+   - 停止日と復旧期限を確認
+   - 例: "Project last paused on 19 Dec 2025" → 復旧期限は "19 Mar 2026"
+
+**ステップ2: プロジェクトを再開**
+
+1. **「Resume Project」ボタンをクリック**:
+   - プロジェクトダッシュボードで緑色の「Resume Project」または「Restore Project」ボタンをクリック
+
+2. **再開処理を待つ**:
+   - プロジェクトの再開には数分かかる場合があります
+   - ステータスが「Active」になるまで待つ
+
+3. **データベース接続を確認**:
+   - Project Settings → Database → Connection String
+   - 接続文字列が表示されることを確認
+
+**ステップ3: Vercel環境変数を更新**
+
+1. **Supabaseの接続文字列を取得**:
+   - Supabaseダッシュボード → Project Settings → Database → Connection String
+   - **URI** タブを選択
+   - 接続文字列をコピー（形式: `postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`）
+
+2. **Vercel環境変数を確認・更新**:
+   - Vercel ダッシュボード → Settings → Environment Variables
+   - `DATABASE_URL` を確認・更新:
+   ```
+   DATABASE_URL=postgresql://postgres:[YOUR-PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true&connection_limit=1
+   ```
+
+3. **重要なパラメータ**:
+   - `?pgbouncer=true` - コネクションプーリング有効化（必須）
+   - `&connection_limit=1` - Vercel Serverless環境での接続数制限（推奨）
+
+**ステップ4: マイグレーションの確認**
+
+プロジェクト再開後、データベーススキーマが存在するか確認:
+
+```bash
+# ローカルから本番DBへマイグレーション実行
+DATABASE_URL="your-supabase-connection-string" npx prisma migrate deploy
+```
+
+または、Vercelのビルドコマンドに追加:
+```json
+// package.json
+{
+  "scripts": {
+    "build": "prisma generate && prisma migrate deploy && next build"
+  }
+}
+```
+
+**ステップ5: Vercelで再デプロイ**
+
+環境変数を更新したら、Vercelで再デプロイ:
+```bash
+# ローカルから
+vercel --prod
+
+# または、Vercelダッシュボードで「Redeploy」ボタンをクリック
+```
+
+**確認方法**
+1. **Supabaseプロジェクトが「Active」状態**:
+   - ダッシュボードで緑色の「Active」ステータスを確認
+
+2. **Vercelログでエラーがないことを確認**:
+   - Deployments → 最新デプロイ → Runtime Logs
+   - 認証成功のログを確認
+
+3. **本番環境でGoogle認証をテスト**:
+   - 本番URLにアクセス
+   - Googleでログイン
+   - ダッシュボードが正常に表示される
+
+**予防策**
+
+**方法1: GitHub Actionsで定期的なヘルスチェック（無料プラン・推奨）**
+
+Supabaseの7日間自動停止を防ぐため、ヘルスチェックAPIとGitHub Actions cron jobを実装します。
+
+**ステップ1: ヘルスチェックAPIを作成**
+
+`src/app/api/health/route.ts` を作成:
+
+```typescript
+import { NextResponse } from "next/server"
+import { prisma } from "@/lib/prisma"
+
+export const dynamic = 'force-dynamic'
+
+export async function GET() {
+  try {
+    // データベース接続を確認（簡単なクエリ）
+    await prisma.$queryRaw`SELECT 1`
+
+    return NextResponse.json({
+      status: "ok",
+      timestamp: new Date().toISOString(),
+      database: "connected"
+    })
+  } catch (error) {
+    console.error("Health check failed:", error)
+    return NextResponse.json(
+      {
+        status: "error",
+        timestamp: new Date().toISOString(),
+        database: "disconnected",
+        error: error instanceof Error ? error.message : "Unknown error"
+      },
+      { status: 500 }
+    )
+  }
+}
+```
+
+**ステップ2: middlewareからヘルスチェックを除外**
+
+`src/middleware.ts` の `config.matcher` を更新:
+
+```typescript
+export const config = {
+  matcher: [
+    '/((?!api/auth|api/health|_next/static|_next/image|favicon.ico).*)',
+  ],
+}
+```
+
+**ステップ3: GitHub Actions workflowを作成**
+
+`.github/workflows/keep-alive.yml` を作成:
+
+```yaml
+name: Keep Supabase Active
+
+on:
+  schedule:
+    # 毎週日曜日と水曜日 0:00 UTC (日本時間 9:00) に実行
+    # 週2回実行することで、1回失敗してもSupabaseの7日間制限内に次回実行される
+    - cron: '0 0 * * 0,3'
+
+  # 手動実行も可能にする
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Ping health endpoint
+        env:
+          HEALTH_CHECK_URL: ${{ secrets.PRODUCTION_URL }}
+        run: |
+          # 環境変数が設定されていない場合はエラー
+          if [ -z "$HEALTH_CHECK_URL" ]; then
+            echo "Error: PRODUCTION_URL secret is not set"
+            echo "Please set PRODUCTION_URL in repository secrets"
+            exit 1
+          fi
+
+          response=$(curl -s -w "\n%{http_code}" "${HEALTH_CHECK_URL}/api/health")
+          http_code=$(echo "$response" | tail -n1)
+          body=$(echo "$response" | head -n-1)
+
+          echo "Target URL: ${HEALTH_CHECK_URL}/api/health"
+          echo "HTTP Status: $http_code"
+          echo "Response: $body"
+
+          if [ "$http_code" -ne 200 ]; then
+            echo "Health check failed with status $http_code"
+            exit 1
+          fi
+
+          echo "Health check successful!"
+```
+
+**ステップ4: GitHub Secretsを設定**
+
+1. GitHubリポジトリページにアクセス: `https://github.com/[USERNAME]/[REPO]/settings/secrets/actions`
+2. 「New repository secret」をクリック
+3. Name: `PRODUCTION_URL`
+4. Value: `https://your-production-domain.vercel.app` (末尾の `/api/health` は不要)
+5. 「Add secret」をクリック
+
+**ステップ5: 動作確認**
+
+1. **手動実行でテスト**:
+   - GitHubリポジトリ → Actions タブ → "Keep Supabase Active" → "Run workflow"
+
+2. **ログを確認**:
+   ```
+   Target URL: https://your-app.vercel.app/api/health
+   HTTP Status: 200
+   Response: {"status":"ok","timestamp":"2025-12-21T12:00:00.000Z","database":"connected"}
+   Health check successful!
+   ```
+
+3. **次回実行スケジュール**:
+   - 毎週日曜日と水曜日の0:00 UTC（日本時間9:00）
+   - 最大3.5日間隔で実行（7日間制限の半分以下）
+
+**利点**:
+- ✅ 完全無料（GitHub Actions無料枠内）
+- ✅ フェイルセーフ設計（週2回実行で冗長性確保）
+- ✅ 自動化されているため手動操作不要
+- ✅ 手動実行オプションあり（workflow_dispatch）
+- ✅ エラー通知（GitHub Actions失敗時にメール通知）
+
+**注意点**:
+- GitHub Actionsが有効になっていることを確認
+- リポジトリがprivateの場合、無料枠（月2,000分）に注意
+- cron jobは最大で実行時刻から5-10分遅れる可能性がある
+
+**方法2: Proプランにアップグレード（$25/月）**
+- 自動一時停止がなくなる
+- より高いリソース制限
+- 24/7サポート
+
+**方法3: 他のデータベースサービスに移行**
+- **Neon**: 無料プラン、Vercel統合が優れている、自動スケーリング
+- **Vercel Postgres**: Vercelネイティブ、簡単な設定
+- **PlanetScale**: MySQL互換、無料プランあり
+
+**データバックアップの推奨**
+
+万が一に備えて定期的にバックアップを取得:
+
+```bash
+# Prismaスキーマからデータをエクスポート
+npx prisma db pull
+
+# Supabaseダッシュボードからバックアップ
+# Database → Backups → Download
+```
+
+**88日経過後の完全削除について**
+
+⚠️ **重要**: 停止後88日を過ぎると:
+- プロジェクトは完全に削除される
+- データは復旧不可能
+- 再開ボタンが使えなくなる
+
+✅ **88日以内であれば**:
+- プロジェクトを再開可能
+- すべてのデータが保持されている
+- SQLダンプやエクスポートでバックアップ可能
+
+**関連する環境変数**
+
+Vercelで設定すべき環境変数の完全なリスト:
+
+```bash
+# データベース（Supabase）
+DATABASE_URL=postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres?pgbouncer=true&connection_limit=1
+
+# NextAuth.js v5
+AUTH_URL=https://your-production-domain.vercel.app
+AUTH_SECRET=(本番用シークレット - openssl rand -base64 32で生成)
+AUTH_TRUST_HOST=true
+
+# Google OAuth
+GOOGLE_CLIENT_ID=(本番用クライアントID)
+GOOGLE_CLIENT_SECRET=(本番用クライアントシークレット)
+
+# Basic認証（オプション）
+BASIC_AUTH_USER=your-username
+BASIC_AUTH_PASSWORD=your-password
+```
+
+**トラブルシューティング**
+
+問題が解決しない場合:
+
+1. **Supabaseログを確認**:
+   - Supabaseダッシュボード → Logs → Database
+   - 接続エラーの詳細を確認
+
+2. **Prisma接続テスト**:
+   ```bash
+   DATABASE_URL="your-connection-string" npx prisma db pull
+   ```
+
+3. **ネットワーク接続を確認**:
+   - Vercelから Supabase へのネットワーク接続が許可されているか
+   - IPv6の問題がないか（Supabaseは IPv4/IPv6 両対応）
+
+4. **パスワードの特殊文字をエスケープ**:
+   ```bash
+   # パスワードに特殊文字が含まれる場合はURLエンコード
+   # 例: p@ssw0rd → p%40ssw0rd
+   ```
+
+**参考リンク**
+- [Supabase Pricing - Paused Projects](https://supabase.com/docs/guides/platform/org-based-billing#paused-projects)
+- [Prisma with Supabase](https://www.prisma.io/docs/guides/database/supabase)
+- [Vercel Environment Variables](https://vercel.com/docs/concepts/projects/environment-variables)
+
+**関連ファイル**
+- `.env.example` - 環境変数テンプレート
+- `prisma/schema.prisma` - データベーススキーマ
+- `src/lib/auth.ts` - NextAuth設定
 
 ---
 
@@ -1805,6 +2158,153 @@ pkill node
 
 ---
 
+#### 6-6. ngrok使用時のNextAuth PKCE検証エラー
+
+**エラーコード**: `InvalidCheck`
+**発生タイミング**: ngrok経由でGoogle OAuth認証を実行した際のコールバック時
+
+**症状**
+- Google認証画面でログイン後、エラーページにリダイレクトされる
+- `/api/auth/error?error=Configuration` が表示される
+- 「Server error: There is a problem with the server configuration.」というメッセージが表示される
+
+**エラーメッセージ**
+```
+[auth][error] InvalidCheck: pkceCodeVerifier value could not be parsed.
+Read more at https://errors.authjs.dev#invalidcheck
+    at parseCookie (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/actions/callback/oauth/checks.js:53:15)
+    at Object.eval [as use] (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/actions/callback/oauth/checks.js:75:30)
+    at handleOAuth (webpack-internal:///(rsc)/./node_modules/@auth/core/lib/actions/callback/oauth/callback.js:117:77)
+```
+
+**原因**
+- NextAuth v5はデフォルトでセキュアCookieを使用する
+- ngrok（HTTPS）経由でアクセスしているが、実際のローカルサーバーはHTTP
+- この不一致により、PKCE（Proof Key for Code Exchange）のコード検証に使用されるCookieが正しく設定・読み取りできない
+- Cookie の `secure` フラグの扱いが原因でCookieがブラウザとサーバー間で共有されない
+
+**解決手順**
+
+**ステップ1: NextAuth設定を更新**
+
+`src/lib/auth.ts` を以下のように更新:
+
+```typescript
+import NextAuth from "next-auth"
+import Google from "next-auth/providers/google"
+import { PrismaAdapter } from "@auth/prisma-adapter"
+import { prisma } from "@/lib/prisma"
+
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  adapter: PrismaAdapter(prisma),
+  providers: [
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      authorization: {
+        params: {
+          prompt: "consent",
+          access_type: "offline",
+          response_type: "code"
+        }
+      }
+    }),
+  ],
+  pages: {
+    signIn: "/login",
+  },
+  trustHost: true,           // 追加: ngrok等のプロキシ経由を許可
+  useSecureCookies: false,   // 追加: 開発環境でセキュアCookieを無効化
+  callbacks: {
+    session({ session, user }) {
+      if (session.user) {
+        session.user.id = user.id
+      }
+      return session
+    },
+  },
+})
+```
+
+**ステップ2: 環境変数を更新**
+
+`.env.local` に以下を追加:
+
+```bash
+# NextAuth設定
+AUTH_URL="https://your-ngrok-domain.ngrok-free.dev"
+AUTH_TRUST_HOST=true
+
+# 既存の設定も保持
+GOOGLE_CLIENT_ID="your-client-id"
+GOOGLE_CLIENT_SECRET="your-client-secret"
+AUTH_SECRET="your-secret-key"
+```
+
+**ステップ3: 開発サーバーを再起動**
+
+環境変数の変更を反映するため、必ず再起動:
+
+```bash
+# サーバーを停止（Ctrl+C）
+# 再起動
+npm run dev
+```
+
+**ステップ4: ブラウザのCookieをクリア**
+
+古いCookieが残っている場合は削除:
+
+1. ブラウザの開発者ツールを開く（F12）
+2. Application（Chrome）またはStorage（Firefox）タブ
+3. Cookies → ngrokドメインを選択
+4. すべてのCookieを削除
+5. ページをリロード
+
+**ステップ5: 再度ログインを試行**
+
+新しい設定で認証フローを実行
+
+**確認方法**
+- ✅ Google認証後、正常にダッシュボードにリダイレクトされる
+- ✅ サーバーログに `InvalidCheck` エラーが表示されない
+- ✅ セッション情報が正しく保存される
+
+**注意事項**
+
+⚠️ **本番環境での設定**
+
+本番環境（Vercel等）では `useSecureCookies: false` を使用しないでください。以下のように環境に応じて切り替えます：
+
+```typescript
+// より安全な設定例
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  // ...他の設定
+  trustHost: true,
+  useSecureCookies: process.env.NODE_ENV === "production",
+  // ...
+})
+```
+
+または、本番環境では設定から `useSecureCookies` を削除し、デフォルト（secure）を使用します。
+
+**予防策**
+- 💡 ngrokを使用する場合は必ず `useSecureCookies: false` を設定
+- 💡 `AUTH_TRUST_HOST=true` を環境変数に追加
+- 💡 ログイン前に古いCookieをクリア
+- ⚠️ 本番環境ではセキュアCookie設定を有効に戻す
+
+**関連ファイル**
+- `src/lib/auth.ts`（NextAuth設定）
+- `.env.local`（環境変数）
+
+**参考リンク**
+- [NextAuth.js v5 ドキュメント](https://authjs.dev/getting-started/installation)
+- [NextAuth Errors: InvalidCheck](https://errors.authjs.dev#invalidcheck)
+- [PKCE とは（RFC 7636）](https://datatracker.ietf.org/doc/html/rfc7636)
+
+---
+
 #### 6-2. 本番環境でのキーワード検索のタイムラグ
 
 **エラーコード**: なし
@@ -1985,6 +2485,170 @@ DialogOverlay:    z-[80]
 
 ---
 
+#### 6-7. Next.js 15の静的レンダリングエラー（Vercelビルド時）
+
+**エラーコード**: Dynamic Server Error
+**発生タイミング**: Vercelでビルド時、または本番環境デプロイ時
+
+**症状**
+- Vercelのビルドログで「Route couldn't be rendered statically」エラーが発生
+- ローカル開発環境では正常に動作する
+- NextAuth v5の`auth()`関数を使用しているページでエラー
+
+**エラーメッセージ**
+```
+Error: Dynamic server usage: Route /dashboard couldn't be rendered statically because it used `headers`.
+See more info here: https://nextjs.org/docs/messages/dynamic-server-error
+```
+
+**原因**
+1. **Next.js 15の静的レンダリング**: Next.js 15はデフォルトでページを静的HTMLに変換しようとする
+2. **NextAuth v5の`auth()`関数**: 内部で`headers()`を使用するため、静的レンダリングができない
+3. **互換性問題**: Next.js 15の静的レンダリングとNextAuth v5のランタイム関数の競合
+
+**技術的背景**
+- Next.js 15はビルド時にページを静的生成（Static Site Generation）しようとする
+- `headers()`, `cookies()`, `searchParams`などのランタイム関数は静的生成不可
+- NextAuth v5の`auth()`は`headers()`を内部で使用するため、動的レンダリングが必須
+
+**解決手順**
+
+**方法1: 動的レンダリングを強制（推奨）**
+
+認証が必要なページに`export const dynamic = 'force-dynamic'`を追加:
+
+```typescript
+// src/app/dashboard/layout.tsx
+import { auth } from "@/lib/auth"
+import { redirect } from "next/navigation"
+
+export const dynamic = 'force-dynamic'  // ← 追加
+
+export default async function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  const session = await auth()
+
+  if (!session) {
+    redirect("/login")
+  }
+
+  return <>{children}</>
+}
+```
+
+**影響を受けるファイル:**
+- `src/app/dashboard/layout.tsx` - ダッシュボードレイアウト
+- `src/app/dashboard/page.tsx` - ダッシュボードページ
+- `src/app/dashboard/articles/[id]/page.tsx` - 記事詳細ページ
+- その他、`auth()`を使用する全てのServer Component
+
+**方法2: クライアントコンポーネントで認証（非推奨）**
+
+Server Componentの代わりにClient Componentで認証する方法もありますが、セキュリティとパフォーマンスの観点から推奨されません。
+
+**確認方法**
+1. **ローカルでビルドテスト**:
+```bash
+npm run build
+```
+
+2. **ビルドログを確認**:
+```bash
+# 静的レンダリングされたページ
+○ /                     # 静的ページ
+○ /login               # 静的ページ
+
+# 動的レンダリングされたページ
+ƒ /dashboard           # 動的ページ (force-dynamic)
+ƒ /dashboard/articles/[id]  # 動的ページ (force-dynamic)
+```
+
+3. **Vercelでデプロイして確認**:
+   - Build Logsでエラーがないことを確認
+   - デプロイ後、認証フローが正常に動作することを確認
+
+**パフォーマンスへの影響**
+
+✅ **メリット:**
+- 認証が必要なページは本来動的であるべき
+- ユーザー固有のデータを扱うため、動的レンダリングが適切
+
+⚠️ **デメリット:**
+- 静的ページより初回レスポンスがわずかに遅い
+- ただし、認証ページでは実用上問題なし
+
+**パブリックページは静的のまま**
+
+認証が不要なページは静的レンダリングのまま:
+```typescript
+// src/app/page.tsx - トップページ（静的）
+// src/app/(auth)/login/page.tsx - ログインページ（静的）
+```
+
+これらのページは`auth()`を使用していないため、自動的に静的レンダリングされます。
+
+**予防策**
+- 💡 `auth()`を使用するページでは最初から`export const dynamic = 'force-dynamic'`を追加
+- 💡 ローカルで`npm run build`を実行してビルドエラーを事前に検出
+- 💡 認証が必要なページと不要なページを明確に分離
+
+**関連設定**
+
+**Next.js 15のレンダリングモード:**
+```typescript
+// 動的レンダリング（推奨）
+export const dynamic = 'force-dynamic'
+
+// 静的レンダリング（デフォルト）
+export const dynamic = 'force-static'
+
+// 自動判定（Next.jsが判断）
+// export constを追加しない場合
+```
+
+**環境変数の設定:**
+
+`.env.example`にNextAuth v5の必須環境変数を追加:
+```bash
+# NextAuth.js v5 (主要な設定)
+AUTH_URL="http://localhost:3000"
+AUTH_SECRET="your-secret-here-generate-with-openssl-rand-base64-32"
+
+# NextAuth.js (後方互換性のため - 推奨)
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="your-secret-here-generate-with-openssl-rand-base64-32"
+
+# Auth Trust Host (ngrok使用時など)
+AUTH_TRUST_HOST=true
+```
+
+**Vercel環境変数:**
+
+本番環境では以下を設定:
+```
+AUTH_URL=https://your-production-domain.vercel.app
+AUTH_SECRET=(本番用シークレット - openssl rand -base64 32で生成)
+GOOGLE_CLIENT_ID=(本番用)
+GOOGLE_CLIENT_SECRET=(本番用)
+DATABASE_URL=(本番データベース)
+```
+
+**参考リンク**
+- [Next.js Dynamic Rendering](https://nextjs.org/docs/app/building-your-application/rendering/server-components#dynamic-rendering)
+- [NextAuth.js v5 Documentation](https://authjs.dev/getting-started/migrating-to-v5)
+- [Vercel Deployment](https://vercel.com/docs/deployments/overview)
+
+**関連ファイル**
+- `src/app/dashboard/layout.tsx`
+- `src/app/dashboard/page.tsx`
+- `src/app/dashboard/articles/[id]/page.tsx`
+- `.env.example`
+
+---
+
 ## 💡 FAQ
 
 ### Q1: middlewareが動作しているか確認する方法は？
@@ -2019,8 +2683,8 @@ npm run dev
 # .env.local
 
 # Basic認証を無効化
-# BASIC_AUTH_USER="tech-clip"
-# BASIC_AUTH_PASSWORD="パスワード"
+# BASIC_AUTH_USER="your-username"
+# BASIC_AUTH_PASSWORD="your-password"
 ```
 
 middlewareは環境変数が設定されていない場合、Basic認証をスキップします:
