@@ -1675,6 +1675,302 @@ BASIC_AUTH_PASSWORD=your-password
 
 ---
 
+#### 5-4. Vercelビルド時の環境変数エラー（DIRECT_DATABASE_URL）
+
+**エラーコード**: P1012
+
+**症状**
+- Vercelデプロイ時にビルドが失敗
+- Prismaスキーマのバリデーションエラー
+
+**エラーメッセージ**
+```
+Error: Prisma schema validation - (get-config wasm)
+Error code: P1012
+error: Environment variable not found: DIRECT_DATABASE_URL.
+  -->  prisma/schema.prisma:4
+   |
+ 3 |   url       = env("DATABASE_URL")
+ 4 |   directUrl = env("DIRECT_DATABASE_URL")
+   |
+Validation Error Count: 1
+```
+
+**発生条件**
+- Prismaスキーマに`directUrl`を追加した
+- Vercelに`DIRECT_DATABASE_URL`環境変数を設定していない
+
+**原因**
+Prismaスキーマで`directUrl`を使用する場合、対応する環境変数`DIRECT_DATABASE_URL`が必要ですが、Vercelに設定されていないためビルドが失敗します。
+
+**解決手順**
+
+1. **Vercelで環境変数を追加**
+   - Vercel Dashboard > Project > Settings > Environment Variables
+   - 「Add New」をクリック
+   - Name: `DIRECT_DATABASE_URL`
+   - Value: Supabaseの Direct connection URL
+   - Environments: `Production`, `Preview`, `Development` すべてにチェック
+   - 「Save」をクリック
+
+2. **Supabase Direct connection URLの取得**
+   - Supabase Dashboard > Project Settings > Database
+   - Connection string > **Direct connection** タブ
+   - URLをコピー（形式: `postgresql://postgres:[PASSWORD]@db.[PROJECT-REF].supabase.co:5432/postgres`）
+
+3. **再デプロイ**
+   - Vercel > Deployments > 最新のデプロイ > 「Redeploy」
+   - または、GitHubにプッシュして自動デプロイ
+
+**注意点**
+- 環境変数を追加した後は必ず再デプロイが必要
+- 環境変数のNameは大文字小文字を区別する
+- すべての環境（Production, Preview, Development）にチェックを入れる
+
+**参考リンク**
+- [Vercel Environment Variables](https://vercel.com/docs/projects/environment-variables)
+- [Prisma Connection Management](https://www.prisma.io/docs/orm/prisma-client/setup-and-configuration/databases-connections)
+
+---
+
+#### 5-5. Supabaseマイグレーション実行時のIPv4/IPv6接続エラー
+
+**エラーコード**: P1001
+
+**症状**
+- Vercelビルド時に`prisma migrate deploy`が失敗
+- データベースサーバーに接続できない
+
+**エラーメッセージ**
+```
+> prisma migrate deploy && prisma generate && next build
+
+Prisma schema loaded from prisma/schema.prisma
+Datasource "db": PostgreSQL database "postgres", schema "public" at "db.xxx.supabase.co:5432"
+
+Error: P1001: Can't reach database server at `db.xxx.supabase.co:5432`
+
+Please make sure your database server is running at `db.xxx.supabase.co:5432`.
+```
+
+**発生条件**
+- VercelのビルドプロセスでPrismaマイグレーションを実行
+- SupabaseのDirect connection URLを使用
+- Supabase無料プランを使用している
+
+**原因**
+SupabaseのDirect connection（`db.[PROJECT-REF].supabase.co:5432`）は**IPv6のみ**をサポートしており、VercelのビルドインフラはIPv4ネットワークを使用しているため接続できません。
+
+Supabaseダッシュボードでは以下のメッセージが表示されます：
+```
+Not IPv4 compatible
+Use Session Pooler if on a IPv4 network or purchase IPv4 add-on
+```
+
+**解決手順**
+
+**方法1: ビルド時のマイグレーションを削除（推奨）**
+
+1. **package.jsonからprisma migrate deployを削除**
+   ```json
+   // 変更前
+   "build": "prisma migrate deploy && prisma generate && next build"
+
+   // 変更後
+   "build": "prisma generate && next build"
+   ```
+
+2. **Supabase SQL Editorで手動マイグレーション**
+   - Supabase Dashboard > SQL Editor
+   - マイグレーションファイル（`prisma/migrations/xxx/migration.sql`）の内容をコピー
+   - SQL Editorで実行
+
+3. **コミット＆プッシュ**
+   ```bash
+   git add package.json
+   git commit -m "fix: Remove prisma migrate deploy from build"
+   git push
+   ```
+
+**方法2: IPv4アドオンを購入（有料）**
+- Supabase Pro プラン以上でIPv4アドオンを購入
+- Direct connectionでIPv4接続が可能になる
+- コストが発生するため推奨しない
+
+**注意点**
+- Session PoolerやTransaction poolerはマイグレーション実行に適していない
+- 手動マイグレーションの場合、`_prisma_migrations`テーブルにレコードが追加されないため、マイグレーション履歴の管理に注意
+- 新しいマイグレーションを作成した場合は、都度Supabase SQL Editorで実行する必要がある
+
+**ワークフロー**
+1. ローカルで`prisma migrate dev`を実行してマイグレーションファイルを作成
+2. マイグレーションファイルをGitにコミット
+3. Supabase SQL Editorでマイグレーションを手動実行
+4. Vercelデプロイ（`prisma generate`のみ実行される）
+
+**参考リンク**
+- [Supabase IPv6 Support](https://supabase.com/docs/guides/platform/ipv6)
+- [Prisma Migrate Deploy](https://www.prisma.io/docs/orm/prisma-migrate/workflows/deployment-and-production)
+
+---
+
+#### 5-6. Supabase RLSによるマイグレーション書き込みエラー
+
+**症状**
+- `prisma migrate deploy`がエラーなく完了しているように見える
+- しかし、`_prisma_migrations`テーブルにレコードが追加されない
+- 実際のテーブル（例: HealthCheck）が作成されない
+
+**エラーメッセージ**
+表面上はエラーが表示されないが、Supabase Security Advisorに以下の警告が表示される：
+```
+Table public._prisma_migrations has RLS enabled, but no policies exist
+```
+
+**発生条件**
+- SupabaseでRow Level Security（RLS）がデフォルトで有効になっている
+- `_prisma_migrations`テーブルにRLSポリシーが設定されていない
+- Prismaがマイグレーション履歴を書き込めない
+
+**原因**
+SupabaseではセキュリティのためにRLSがデフォルトで有効になっています。RLSが有効なテーブルにポリシーがない場合、すべてのアクセスがブロックされます。これにより、Prismaが`_prisma_migrations`テーブルに書き込めません。
+
+**解決手順**
+
+1. **Supabase SQL Editorで_prisma_migrationsのRLSを無効化**
+   ```sql
+   ALTER TABLE "_prisma_migrations" DISABLE ROW LEVEL SECURITY;
+   ```
+
+2. **理由**
+   - `_prisma_migrations`はPrismaのシステムテーブルであり、ユーザーデータではない
+   - RLSではなく、データベースユーザー/ロールレベルでアクセス制御すべき
+   - RLSを無効化してもセキュリティリスクはない
+
+3. **確認**
+   - Supabase Table Editor > `_prisma_migrations`
+   - RLSが無効になっていることを確認
+   - Security Advisorの警告が消えていることを確認
+
+**注意点**
+- RLSを無効化しても既存のポリシーは削除されない（単に無視されるだけ）
+- アプリケーションテーブル（User, Articleなど）ではRLSを有効にすべき
+- `_prisma_migrations`はシステムテーブルなのでRLS不要
+
+**他のシステムテーブルも同様に対処**
+必要に応じて、以下のテーブルもRLSを無効化：
+```sql
+ALTER TABLE "_prisma_migrations" DISABLE ROW LEVEL SECURITY;
+ALTER TABLE "VerificationToken" DISABLE ROW LEVEL SECURITY;  -- NextAuth用
+ALTER TABLE "Session" DISABLE ROW LEVEL SECURITY;            -- NextAuth用
+ALTER TABLE "Account" DISABLE ROW LEVEL SECURITY;            -- NextAuth用
+```
+
+**参考リンク**
+- [Supabase Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security)
+- [Prisma with Supabase RLS](https://www.prisma.io/docs/orm/overview/databases/supabase#row-level-security)
+
+---
+
+#### 5-7. Supabase JS ClientでのID自動生成エラー
+
+**症状**
+- `/api/health`エンドポイントにアクセスするとエラーが返される
+- HealthCheckテーブルへの挿入が失敗する
+
+**エラーメッセージ**
+```json
+{
+  "status": "error",
+  "timestamp": "2026-02-21T11:57:59.633Z",
+  "database": "disconnected",
+  "activityLogged": false,
+  "error": "null value in column \"id\" of relation \"HealthCheck\" violates not-null constraint"
+}
+```
+
+**発生条件**
+- Prismaスキーマで`@default(cuid())`を使用している
+- Supabase JS Clientを使ってデータを挿入している
+- `id`フィールドを明示的に指定していない
+
+**原因**
+Prismaの`@default(cuid())`はPrisma Clientを使用する場合にのみ機能します。Supabase JS Clientを使用する場合、JavaScriptコードで明示的にIDを生成する必要があります。
+
+**Prismaスキーマ**
+```prisma
+model HealthCheck {
+  id        String   @id @default(cuid())  // ← Supabase JS Clientでは機能しない
+  timestamp DateTime @default(now())
+  source    String   @default("github-actions")
+}
+```
+
+**解決手順**
+
+1. **コードでIDを明示的に生成**
+
+変更前（❌）:
+```typescript
+const { error: insertError } = await supabase
+  .from('HealthCheck')
+  .insert({
+    timestamp,
+    source: 'github-actions'
+    // idが指定されていない → エラー
+  })
+```
+
+変更後（✅）:
+```typescript
+const id = crypto.randomUUID()  // ← UUIDを生成
+
+const { error: insertError } = await supabase
+  .from('HealthCheck')
+  .insert({
+    id,  // ← 明示的にIDを指定
+    timestamp,
+    source: 'github-actions'
+  })
+```
+
+2. **代替案: Prisma Clientを使用**
+
+Supabase JS Clientの代わりにPrisma Clientを使用すれば、`@default(cuid())`が機能します：
+
+```typescript
+import { prisma } from '@/lib/prisma'
+
+const healthCheck = await prisma.healthCheck.create({
+  data: {
+    // idは自動生成される
+    timestamp: new Date(),
+    source: 'github-actions'
+  }
+})
+```
+
+**注意点**
+- `crypto.randomUUID()`はNode.js環境で使用可能（ブラウザではWeb Crypto APIを使用）
+- UUIDとcuidは異なる形式だが、どちらもユニークなIDとして使用可能
+- Prismaスキーマで`@default(uuid())`を使う方がUUIDと整合性が取れる
+
+**Prismaスキーマの推奨変更**
+```prisma
+model HealthCheck {
+  id        String   @id @default(uuid())  // ← cuid()からuuid()に変更
+  timestamp DateTime @default(now())
+  source    String   @default("github-actions")
+}
+```
+
+**参考リンク**
+- [Prisma Default Values](https://www.prisma.io/docs/orm/reference/prisma-schema-reference#default)
+- [Supabase JS Client Insert](https://supabase.com/docs/reference/javascript/insert)
+- [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Crypto/randomUUID)
+
+---
+
 ### 6. 開発環境
 
 #### 6-1. ngrokでのmiddlewareモジュールエラー
