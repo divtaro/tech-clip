@@ -8,11 +8,13 @@ export async function GET() {
     // Supabase JS Client 経由で書き込み操作を行うことで、
     // Supabase がアクティビティとして確実に検出する
     const timestamp = new Date().toISOString()
+    const id = crypto.randomUUID()
 
     // HealthCheckテーブルにレコードを挿入（書き込み操作）
     const { error: insertError } = await supabase
       .from('HealthCheck')
       .insert({
+        id,
         timestamp,
         source: 'github-actions'
       })
