@@ -5,9 +5,23 @@ export const dynamic = 'force-dynamic'
 
 export async function GET() {
   try {
-    // Supabase JS Client 経由でアクセスすることで、Supabase がアクティビティとして検出する
-    // Prisma の直接接続（DATABASE_URL）は PostgreSQL への直接接続のため、
-    // Supabase のアクティビティ監視をバイパスしてしまう
+    // Supabase JS Client 経由で書き込み操作を行うことで、
+    // Supabase がアクティビティとして確実に検出する
+    const timestamp = new Date().toISOString()
+
+    // HealthCheckテーブルにレコードを挿入（書き込み操作）
+    const { error: insertError } = await supabase
+      .from('HealthCheck')
+      .insert({
+        timestamp,
+        source: 'github-actions'
+      })
+
+    if (insertError) {
+      throw new Error(insertError.message)
+    }
+
+    // 統計情報の取得（読み取り操作）
     const { count: userCount, error: userError } = await supabase
       .from('User')
       .select('*', { count: 'exact', head: true })
@@ -22,8 +36,9 @@ export async function GET() {
 
     return NextResponse.json({
       status: "ok",
-      timestamp: new Date().toISOString(),
+      timestamp,
       database: "connected",
+      activityLogged: true,
       stats: {
         users: userCount,
         articles: articleCount
@@ -36,6 +51,7 @@ export async function GET() {
         status: "error",
         timestamp: new Date().toISOString(),
         database: "disconnected",
+        activityLogged: false,
         error: error instanceof Error ? error.message : "Unknown error"
       },
       { status: 500 }

@@ -90,3 +90,12 @@ model VerificationToken {
 
   @@unique([identifier, token])
 }
+
+// HealthCheckモデル - Supabaseのアクティビティ検知用
+model HealthCheck {
+  id        String   @id @default(cuid())
+  timestamp DateTime @default(now())
+  source    String   @default("github-actions")
+
+  @@index([timestamp])
+}
