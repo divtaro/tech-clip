@@ -2,9 +2,9 @@ name: Keep Supabase Active
 
 on:
   schedule:
-    # 毎週月曜日 0:00 UTC (日本時間 9:00) に実行
+    # 毎週月曜日・木曜日 0:00 UTC (日本時間 9:00) に実行
     # Supabaseへアクセスし、7日間の自動停止を防ぐ
-    - cron: '0 0 * * 1'
+    - cron: '0 0 * * 1,4'
 
   # 手動実行も可能にする
   workflow_dispatch:
