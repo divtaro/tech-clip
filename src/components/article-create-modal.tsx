@@ -21,7 +21,7 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Card, CardContent } from "@/components/ui/card"
-import { Loader2, AlertCircle } from "lucide-react"
+import { Loader2, AlertCircle, Clipboard } from "lucide-react"
 import { createArticle } from "@/actions/article-actions"
 import toast from "react-hot-toast"
 import { z } from "zod"
@@ -44,7 +44,7 @@ interface OGPData {
 const urlSchema = z.string().url("有効なURLを入力してください")
 
 // URL正規化関数
-const normalizeUrl = (input: string): string => {
+export const normalizeUrl = (input: string): string => {
   // 前後の空白を削除
   let normalized = input.trim()
 
@@ -66,7 +66,7 @@ const normalizeUrl = (input: string): string => {
 }
 
 // 厳密なURL検証関数
-const isValidUrl = (urlString: string): boolean => {
+export const isValidUrl = (urlString: string): boolean => {
   // 空文字チェック
   if (!urlString || !urlString.trim()) {
     return false
@@ -75,27 +75,19 @@ const isValidUrl = (urlString: string): boolean => {
   // 正規化
   const normalized = normalizeUrl(urlString)
 
+  // 全角文字（日本語ドメイン・パスなど）のチェック
+  // new URL() はホスト名をPunycode化、パス/クエリを%エンコードして
+  // 非ASCII文字を消してしまうため、パース前の生文字列でチェックする必要がある
+  if (/[^\x00-\x7F]/.test(normalized)) {
+    return false
+  }
+
   // URL形式チェック
   try {
     const url = new URL(normalized)
 
     // http/httpsのみ許可
     if (url.protocol !== 'http:' && url.protocol !== 'https:') {
-      return false
-    }
-
-    // ホスト名の検証（日本語ドメインなどを除外）
-    if (!/^[a-zA-Z0-9.-]+$/.test(url.hostname)) {
-      return false
-    }
-
-    // パスに全角文字が含まれていないかチェック
-    if (/[^\x00-\x7F]/.test(url.pathname)) {
-      return false
-    }
-
-    // クエリパラメータに全角文字が含まれていないかチェック
-    if (url.search && /[^\x00-\x7F]/.test(url.search)) {
       return false
     }
 
@@ -223,6 +215,26 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
     }
   }
 
+  // Safari はユーザー操作から同期的に呼ばれた Clipboard API しか許可しない。
+  // React の合成イベントを経由するとユーザー操作の判定が失われるため、
+  // ネイティブの click リスナーを直接張って readText() を同期的に呼ぶ。
+  const pasteButtonRef = (node: HTMLButtonElement | null) => {
+    if (!node) return
+    node.onclick = () => {
+      navigator.clipboard
+        .readText()
+        .then((text) => {
+          if (text) {
+            setUrl(text)
+          }
+        })
+        .catch((error) => {
+          console.error("クリップボード読み取りエラー:", error)
+          toast.error("クリップボードを読み取れませんでした。長押しで貼り付けてください")
+        })
+    }
+  }
+
   const handleClose = () => {
     setUrl("")
     setUrlError("")
@@ -255,8 +267,19 @@ export function ArticleCreateModal({ open, onOpenChange }: ArticleCreateModalPro
                 placeholder="https://example.com/article"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="pr-10"
+                className={url ? "pr-10" : "pr-20"}
               />
+              {!url && (
+                <button
+                  type="button"
+                  ref={pasteButtonRef}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1 text-xs px-2 py-1 rounded-md border text-muted-foreground hover:text-foreground hover:bg-accent"
+                  aria-label="クリップボードから貼り付け"
+                >
+                  <Clipboard className="h-3.5 w-3.5" />
+                  貼り付け
+                </button>
+              )}
               {url && !isFetching && (
                 <button
                   type="button"
