@@ -124,6 +124,13 @@ npm run type-check
 # ESLintチェック
 npm run lint
 
+# ユニットテスト（Vitest）
+npm test
+
+# E2Eテスト（Playwright。初回は npx playwright install chromium が必要）
+# ビルドしてダミー環境変数で起動するため、DBやGoogle OAuthは不要
+npm run test:e2e
+
 # Prisma Studio（データベースGUI）
 npm run db:studio
 
