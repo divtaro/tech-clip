@@ -131,6 +131,9 @@ npm test
 # ビルドしてダミー環境変数で起動するため、DBやGoogle OAuthは不要
 npm run test:e2e
 
+# 認証情報の漏洩チェック（gitleaks。CIでも実行される）
+gitleaks detect --config .gitleaks.toml --redact
+
 # Prisma Studio（データベースGUI）
 npm run db:studio
 
