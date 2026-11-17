@@ -26,8 +26,6 @@ test.describe("ログインページ", () => {
   })
 
   test("Googleログインボタンで認証フローが開始される", async ({ page }) => {
-    // 初回は/api/authのオンデマンドコンパイルがあるため時間に余裕を持たせる
-    test.slow()
     await page.goto("/login")
     // ハイドレーション前のクリックを避ける
     await page.waitForLoadState("networkidle")
