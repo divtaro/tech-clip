@@ -1,0 +1,10 @@
+title = "tech-clip gitleaks config"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "プレースホルダのみを含むサンプルファイル"
+paths = [
+  '''^\.env\.example$''',
+]
